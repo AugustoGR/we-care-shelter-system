@@ -1,0 +1,137 @@
+
+.main {
+	min-height: 100vh;
+	background: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+}
+
+.container {
+	width: 100%;
+	max-width: 448px;
+	min-height: 757px;
+	background: #fff;
+	border-radius: 10px;
+	box-shadow: 0px 0px 1px 0px rgba(23, 26, 31, 0.05), 0px 0px 2px 0px rgba(23, 26, 31, 0.08);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 23px 56px 40px 56px;
+
+	@media (max-width: 540px) {
+		padding: 23px 24px 30px 24px;
+		min-height: auto;
+	}
+}
+
+.logo {
+	margin-bottom: 27px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.logoImage {
+	width: auto;
+	height: auto;
+	max-width: 100%;
+	object-fit: contain;
+}
+
+.title {
+	font-family: Inter, sans-serif;
+	font-weight: 700;
+	font-size: 24px;
+	line-height: 1.3333333333333333em;
+	letter-spacing: -0.025em;
+	color: #171A1F;
+	margin-bottom: 3px;
+	text-align: center;
+}
+
+.subtitle {
+	font-family: 'Open Sans', sans-serif;
+	font-size: 14px;
+	line-height: 1.4285714285714286em;
+	color: #565D6D;
+	margin-bottom: 48px;
+	text-align: center;
+}
+
+.form {
+	width: 100%;
+	max-width: 336px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+
+	@media (max-width: 540px) {
+		max-width: 100%;
+	}
+}
+
+.inputGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 0;
+}
+
+.label {
+	font-family: 'Open Sans', sans-serif;
+	font-size: 12px;
+	line-height: 1.6666666666666667em;
+	color: #171A1F;
+}
+
+.inputIconWrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	width: 100%;
+}
+
+.input {
+	border: 1px solid #DEE1E6;
+	border-radius: 6px;
+	height: 37px;
+	font-size: 14px;
+	line-height: 1.5714285714285714em;
+	color: #565D6D;
+	padding: 8px 12px 8px 40px;
+	width: 100%;
+	font-family: 'Open Sans', sans-serif;
+
+	&::placeholder {
+		color: #565D6D;
+		font-family: 'Open Sans', sans-serif;
+	}
+}
+
+.icon {
+	position: absolute;
+	left: 12px;
+	width: 16px;
+	height: 16px;
+	z-index: 1;
+	pointer-events: none;
+}
+
+.button {
+	margin-top: 32px;
+	height: 40px;
+	background: #0079BF;
+	color: #fff;
+	border-radius: 6px;
+	font-size: 14px;
+	line-height: 1.5714285714285714em;
+	font-family: 'Open Sans', sans-serif;
+	width: 100%;
+	border: none;
+
+	&:hover {
+		background: #006ba6;
+	}
+}
