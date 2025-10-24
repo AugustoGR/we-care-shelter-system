@@ -215,14 +215,16 @@ export default function Resources() {
       <div className={styles.filterButtons}>
         <button
           className={`${styles.filterBtn} ${categoriaFiltro === '' ? styles.filterBtnActive : ''}`}
-          onClick={() => setCategoriaFiltro('')}>
+          onClick={() => setCategoriaFiltro('')}
+        >
           Todos
         </button>
         {categorias.map((cat) => (
           <button
             key={cat}
             className={`${styles.filterBtn} ${categoriaFiltro === cat ? styles.filterBtnActive : ''}`}
-            onClick={() => setCategoriaFiltro(cat)}>
+            onClick={() => setCategoriaFiltro(cat)}
+          >
             {cat}
           </button>
         ))}
@@ -269,7 +271,8 @@ export default function Resources() {
                   <td>{item.validade}</td>
                   <td>
                     <span
-                      className={`${styles.statusBadge} ${styles[`status${item.status.replace(/ /g, '')}`]}`}>
+                      className={`${styles.statusBadge} ${styles[`status${item.status.replace(/ /g, '')}`]}`}
+                    >
                       {item.status}
                     </span>
                   </td>
@@ -288,7 +291,8 @@ export default function Resources() {
       <div className={styles.pagination}>
         <button className={styles.paginationButton}>Anterior</button>
         <button
-          className={`${styles.paginationButton} ${styles.paginationActive}`}>
+          className={`${styles.paginationButton} ${styles.paginationActive}`}
+        >
           1
         </button>
         <button className={styles.paginationButton}>Próximo</button>

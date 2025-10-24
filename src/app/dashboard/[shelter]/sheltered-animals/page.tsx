@@ -139,7 +139,8 @@ export default function ShelteredAnimalsPage() {
                 height="14"
                 viewBox="0 0 14 14"
                 fill="none"
-                xmlns="http://www.w3.org/2000/svg">
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   d="M7 1.16667V12.8333M1.16667 7H12.8333"
                   stroke="currentColor"
@@ -157,7 +158,8 @@ export default function ShelteredAnimalsPage() {
                 height="16"
                 viewBox="0 0 16 16"
                 fill="none"
-                xmlns="http://www.w3.org/2000/svg">
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <circle
                   cx="7.66667"
                   cy="7.66667"
@@ -208,7 +210,8 @@ export default function ShelteredAnimalsPage() {
                   <td>{a.sex}</td>
                   <td>
                     <span
-                      className={styles[`status${a.status.replace(/ /g, '')}`]}>
+                      className={styles[`status${a.status.replace(/ /g, '')}`]}
+                    >
                       {a.status}
                     </span>
                   </td>
@@ -220,7 +223,8 @@ export default function ShelteredAnimalsPage() {
                           height="16"
                           viewBox="0 0 16 16"
                           fill="none"
-                          xmlns="http://www.w3.org/2000/svg">
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
                           <path
                             d="M11.334 1.333L14.667 4.667M1.333 14.667l2.953-2.953a1.333 1.333 0 01.488-.314l4.56-1.52a.667.667 0 00.386-.386l1.52-4.56a1.333 1.333 0 01.314-.488L14.667 1.333l-3.334 3.334a1.333 1.333 0 01-.488.314l-4.56 1.52a.667.667 0 00-.386.386l-1.52 4.56a1.333 1.333 0 01-.314.488L1.333 14.667z"
                             stroke="#171A1F"
@@ -236,7 +240,8 @@ export default function ShelteredAnimalsPage() {
                           height="16"
                           viewBox="0 0 16 16"
                           fill="none"
-                          xmlns="http://www.w3.org/2000/svg">
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
                           <path
                             d="M2 4h12M5.333 4V2.667a1.333 1.333 0 011.334-1.334h2.666a1.333 1.333 0 011.334 1.334V4m2 0v9.333a1.333 1.333 0 01-1.334 1.334H4.667a1.333 1.333 0 01-1.334-1.334V4h9.334z"
                             stroke="currentColor"
@@ -260,7 +265,8 @@ export default function ShelteredAnimalsPage() {
               height="16"
               viewBox="0 0 16 16"
               fill="none"
-              xmlns="http://www.w3.org/2000/svg">
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <path
                 d="M10 12L6 8l4-4"
                 stroke="currentColor"
@@ -281,7 +287,8 @@ export default function ShelteredAnimalsPage() {
               height="16"
               viewBox="0 0 16 16"
               fill="none"
-              xmlns="http://www.w3.org/2000/svg">
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <path
                 d="M6 12l4-4-4-4"
                 stroke="currentColor"
@@ -299,13 +306,15 @@ export default function ShelteredAnimalsPage() {
           <Modal.Header title="Registrar Novo Animal">
             <button
               onClick={() => setIsModalOpen(false)}
-              className={styles.closeButton}>
+              className={styles.closeButton}
+            >
               <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
-                xmlns="http://www.w3.org/2000/svg">
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   d="M18 6L6 18M6 6l12 12"
                   stroke="currentColor"
@@ -373,7 +382,8 @@ export default function ShelteredAnimalsPage() {
                     onChange={(e) =>
                       setForm((f) => ({ ...f, sex: e.target.value }))
                     }
-                    className={styles.select}>
+                    className={styles.select}
+                  >
                     <option value="Macho">Macho</option>
                     <option value="Fêmea">Fêmea</option>
                   </Select>
@@ -387,7 +397,8 @@ export default function ShelteredAnimalsPage() {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, health: e.target.value }))
                   }
-                  className={styles.select}>
+                  className={styles.select}
+                >
                   <option value="Saudável">Saudável</option>
                   <option value="Em Cuidado">Em Cuidado</option>
                   <option value="Aguardando Adoção">Aguardando Adoção</option>
@@ -458,7 +469,8 @@ export default function ShelteredAnimalsPage() {
                     height="16"
                     viewBox="0 0 16 16"
                     fill="none"
-                    xmlns="http://www.w3.org/2000/svg">
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     <path
                       d="M14.667 10v2.667A1.333 1.333 0 0113.333 14H2.667a1.333 1.333 0 01-1.334-1.333V10M11.333 5.333L8 2m0 0L4.667 5.333M8 2v8"
                       stroke="#171A1F"
@@ -490,7 +502,8 @@ export default function ShelteredAnimalsPage() {
                 <Button
                   type="button"
                   variant="ghost"
-                  onClick={() => setIsModalOpen(false)}>
+                  onClick={() => setIsModalOpen(false)}
+                >
                   Cancelar
                 </Button>
                 <Button type="submit">Salvar Animal</Button>

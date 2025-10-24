@@ -136,13 +136,15 @@ export default function Shelters() {
                     background: shelter.tagBg,
                     color: shelter.tagText,
                     borderColor: shelter.tagBorder,
-                  }}>
+                  }}
+                >
                   {shelter.status}
                 </span>
               </div>
               <Link
                 href={`/dashboard/${shelter.slug}/modules`}
-                className={styles.detailsButton}>
+                className={styles.detailsButton}
+              >
                 Acessar
               </Link>
             </div>

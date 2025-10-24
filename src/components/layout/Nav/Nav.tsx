@@ -108,7 +108,8 @@ export function Nav({ isOpen, onClose }: NavProps) {
                 return (
                   <div
                     key={item.name}
-                    className={`${styles.navItem} ${styles.navItemDisabled}`}>
+                    className={`${styles.navItem} ${styles.navItemDisabled}`}
+                  >
                     <Image
                       src={item.icon}
                       alt={item.name}
@@ -126,7 +127,8 @@ export function Nav({ isOpen, onClose }: NavProps) {
                   key={item.name}
                   href={item.href}
                   className={`${styles.navItem} ${isActive(item.href) ? styles.navItemActive : ''}`}
-                  onClick={onClose}>
+                  onClick={onClose}
+                >
                   <Image
                     src={item.icon}
                     alt={item.name}

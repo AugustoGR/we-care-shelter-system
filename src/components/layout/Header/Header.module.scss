@@ -205,6 +205,10 @@
   font-size: $fz_sm;
   transition: all 0.2s ease;
   width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
 
   &:hover {
     background: #f3f4f6;
@@ -222,6 +226,23 @@
 
   span {
     white-space: nowrap;
+  }
+}
+
+.userInfo {
+  padding: 0.5rem 2rem;
+  font-size: $fz_sm;
+  color: $blue_dark;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  strong {
+    color: $blue_light;
   }
 }
 

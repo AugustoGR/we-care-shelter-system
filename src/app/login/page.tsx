@@ -1,15 +1,82 @@
 'use client'
-import React from 'react'
+
+import React, { useState } from 'react'
 
 import Image from 'next/image'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useAuth } from '@/contexts/AuthContext'
 
 import styles from './Login.module.scss'
 
-export default function Home() {
+export default function Login() {
+  const { login } = useAuth()
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isLoading, setIsLoading] = useState(false)
+  const [apiError, setApiError] = useState('')
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+
+    // Validar email
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email é obrigatório'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Email inválido'
+    }
+
+    // Validar senha
+    if (!formData.password) {
+      newErrors.password = 'Senha é obrigatória'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setApiError('')
+
+    if (!validateForm()) {
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      await login({
+        email: formData.email,
+        password: formData.password,
+      })
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message ||
+        'Erro ao fazer login. Verifique suas credenciais.'
+      setApiError(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({ ...prev, [id]: value }))
+    // Limpar erro do campo quando o usuário começar a digitar
+    if (errors[id]) {
+      setErrors((prev) => ({ ...prev, [id]: '' }))
+    }
+    if (apiError) {
+      setApiError('')
+    }
+  }
+
   return (
     <main className={styles.main}>
       <div className={styles.container}>
@@ -24,7 +91,10 @@ export default function Home() {
             />
           </div>
           <h2 className={styles.subtitle}>Acessar sua Conta</h2>
-          <form className={styles.form}>
+
+          {apiError && <div className={styles.errorMessage}>{apiError}</div>}
+
+          <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.inputGroup}>
               <label htmlFor="email" className={styles.label}>
                 Email
@@ -34,7 +104,13 @@ export default function Home() {
                 type="email"
                 placeholder="seuemail@exemplo.com"
                 className={styles.input}
+                value={formData.email}
+                onChange={handleChange}
+                disabled={isLoading}
               />
+              {errors.email && (
+                <span className={styles.error}>{errors.email}</span>
+              )}
             </div>
             <div className={styles.inputGroup}>
               <label htmlFor="password" className={styles.label}>
@@ -45,10 +121,20 @@ export default function Home() {
                 type="password"
                 placeholder="••••••••"
                 className={styles.input}
+                value={formData.password}
+                onChange={handleChange}
+                disabled={isLoading}
               />
+              {errors.password && (
+                <span className={styles.error}>{errors.password}</span>
+              )}
             </div>
-            <Button type="submit" className={styles.button}>
-              Entrar
+            <Button
+              type="submit"
+              className={styles.button}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
           <div className={styles.signupRow}>

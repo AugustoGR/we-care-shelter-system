@@ -106,7 +106,8 @@ export default function ModulesPage() {
                     moduleStates[mod.key]
                       ? styles.statusTextActive
                       : styles.statusTextInactive
-                  }>
+                  }
+                >
                   {moduleStates[mod.key] ? 'Ativo' : 'Inativo'}
                 </span>
               </div>

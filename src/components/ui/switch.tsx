@@ -18,7 +18,8 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
 
     return (
       <label
-        className={cn('inline-flex items-center cursor-pointer', className)}>
+        className={cn('inline-flex items-center cursor-pointer', className)}
+      >
         <div className="relative">
           <input
             type="checkbox"
@@ -32,7 +33,8 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
             className={cn(
               'w-11 h-6 rounded-full transition-colors duration-200',
               checked ? 'bg-[#0078BD]' : 'bg-gray-200',
-            )}>
+            )}
+          >
             <div
               className={cn(
                 'absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200',

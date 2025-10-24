@@ -134,4 +134,34 @@
 	&:hover {
 		background: #006ba6;
 	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+}
+
+.error {
+	color: #D32F2F;
+	font-size: 12px;
+	font-family: 'Open Sans', sans-serif;
+	margin-top: -5px;
+}
+
+.errorMessage {
+	width: 100%;
+	max-width: 336px;
+	padding: 12px;
+	background: #FFEBEE;
+	border: 1px solid #EF5350;
+	border-radius: 6px;
+	color: #C62828;
+	font-size: 14px;
+	font-family: 'Open Sans', sans-serif;
+	margin-bottom: 20px;
+	text-align: center;
+
+	@media (max-width: 540px) {
+		max-width: 100%;
+	}
 }

@@ -172,7 +172,8 @@ export default function Sheltered() {
                   <td>{item.genero}</td>
                   <td>
                     <span
-                      className={`${styles.statusBadge} ${styles[`status${item.status}`]}`}>
+                      className={`${styles.statusBadge} ${styles[`status${item.status}`]}`}
+                    >
                       {item.status}
                     </span>
                   </td>
@@ -226,7 +227,8 @@ export default function Sheltered() {
                 value={form.genero}
                 onChange={handleInput}
                 required
-                className={styles.select}>
+                className={styles.select}
+              >
                 <option value="">Gênero</option>
                 <option value="Masculino">Masculino</option>
                 <option value="Feminino">Feminino</option>
@@ -245,7 +247,8 @@ export default function Sheltered() {
                 value={form.status}
                 onChange={handleInput}
                 required
-                className={styles.select}>
+                className={styles.select}
+              >
                 <option value="Ativo">Ativo</option>
                 <option value="Inativo">Inativo</option>
                 <option value="Pendente">Pendente</option>
