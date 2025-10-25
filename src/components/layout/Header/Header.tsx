@@ -156,11 +156,6 @@ export function Header({ onMenuToggle }: HeaderProps) {
           </div>
         </nav>
       </div>
-      {user && (
-        <div className={styles.userInfo}>
-          Olá, <strong>{user.name}</strong>
-        </div>
-      )}
     </header>
   )
 }

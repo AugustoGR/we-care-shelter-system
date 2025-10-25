@@ -1,10 +1,16 @@
 'use client'
-import styles from '../(shelters)/Shelters.module.scss'
+import React, { useState } from 'react'
+
 import Image from 'next/image'
-import { Input } from '@/components/ui/input'
+import { useRouter } from 'next/navigation'
+
+import { CreateShelterData } from '@/@types/shelterProps'
 import { Button } from '@/components/ui/button'
-import { useState } from 'react'
+import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { sheltersService } from '@/services'
+
+import styles from '../(shelters)/Shelters.module.scss'
 
 const calamities = [
   'Inundação',
@@ -18,9 +24,134 @@ const calamities = [
   'Ciclone',
 ]
 
+const brazilianStates = [
+  { value: 'AC', label: 'Acre' },
+  { value: 'AL', label: 'Alagoas' },
+  { value: 'AP', label: 'Amapá' },
+  { value: 'AM', label: 'Amazonas' },
+  { value: 'BA', label: 'Bahia' },
+  { value: 'CE', label: 'Ceará' },
+  { value: 'DF', label: 'Distrito Federal' },
+  { value: 'ES', label: 'Espírito Santo' },
+  { value: 'GO', label: 'Goiás' },
+  { value: 'MA', label: 'Maranhão' },
+  { value: 'MT', label: 'Mato Grosso' },
+  { value: 'MS', label: 'Mato Grosso do Sul' },
+  { value: 'MG', label: 'Minas Gerais' },
+  { value: 'PA', label: 'Pará' },
+  { value: 'PB', label: 'Paraíba' },
+  { value: 'PR', label: 'Paraná' },
+  { value: 'PE', label: 'Pernambuco' },
+  { value: 'PI', label: 'Piauí' },
+  { value: 'RJ', label: 'Rio de Janeiro' },
+  { value: 'RN', label: 'Rio Grande do Norte' },
+  { value: 'RS', label: 'Rio Grande do Sul' },
+  { value: 'RO', label: 'Rondônia' },
+  { value: 'RR', label: 'Roraima' },
+  { value: 'SC', label: 'Santa Catarina' },
+  { value: 'SP', label: 'São Paulo' },
+  { value: 'SE', label: 'Sergipe' },
+  { value: 'TO', label: 'Tocantins' },
+]
+
 export default function NewShelter() {
-  const [calamity, setCalamity] = useState('')
-  const [active, setActive] = useState(true)
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const [formData, setFormData] = useState<CreateShelterData>({
+    name: '',
+    description: '',
+    calamity: '',
+    address: '',
+    city: '',
+    state: '',
+    cep: '',
+    active: true,
+  })
+
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    const { id, value } = e.target
+
+    // Formata o CEP automaticamente
+    if (id === 'cep') {
+      const formatted = value
+        .replace(/\D/g, '') // Remove tudo que não é número
+        .replace(/(\d{5})(\d)/, '$1-$2') // Adiciona o hífen
+        .slice(0, 9) // Limita a 9 caracteres (00000-000)
+
+      setFormData((prev) => ({ ...prev, [id]: formatted }))
+      return
+    }
+
+    setFormData((prev) => ({ ...prev, [id]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+
+    // Validações básicas
+    if (!formData.name.trim()) {
+      setError('Nome do abrigo é obrigatório')
+      return
+    }
+
+    if (!formData.calamity) {
+      setError('Selecione o tipo de calamidade')
+      return
+    }
+
+    if (!formData.address.trim()) {
+      setError('Endereço é obrigatório')
+      return
+    }
+
+    if (!formData.city.trim()) {
+      setError('Cidade é obrigatória')
+      return
+    }
+
+    if (!formData.state) {
+      setError('Selecione o estado')
+      return
+    }
+
+    if (!formData.cep.trim()) {
+      setError('CEP é obrigatório')
+      return
+    }
+
+    // Valida formato do CEP
+    const cepNumbers = formData.cep.replace(/\D/g, '')
+    if (cepNumbers.length !== 8) {
+      setError('CEP deve ter 8 dígitos')
+      return
+    }
+
+    try {
+      setLoading(true)
+      await sheltersService.create(formData)
+
+      // Redireciona para a listagem de abrigos após sucesso
+      router.push('/')
+    } catch (err: any) {
+      console.error('Erro ao criar abrigo:', err)
+      setError(
+        err?.response?.data?.message || 'Erro ao criar abrigo. Tente novamente.',
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCancel = () => {
+    router.push('/')
+  }
 
   return (
     <main className={styles.main}>
@@ -29,18 +160,25 @@ export default function NewShelter() {
         <h2 className={styles.formSubtitle}>
           Preencha os detalhes para registrar um novo abrigo emergencial.
         </h2>
-        <form className={styles.form}>
+
+        {error && <div className={styles.errorMessage}>{error}</div>}
+
+        <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.inputGroup}>
-            <label htmlFor="shelterName" className={styles.label}>
+            <label htmlFor="name" className={styles.label}>
               Nome do Abrigo
             </label>
             <Input
-              id="shelterName"
+              id="name"
               type="text"
               placeholder="Ex: Abrigo Esperança"
               className={styles.input}
+              value={formData.name}
+              onChange={handleInputChange}
+              disabled={loading}
             />
           </div>
+
           <div className={styles.inputGroup}>
             <label htmlFor="description" className={styles.label}>
               Descrição do Abrigo
@@ -50,15 +188,23 @@ export default function NewShelter() {
               placeholder="Uma breve descrição sobre o abrigo e suas características."
               className={styles.textarea}
               rows={3}
+              value={formData.description}
+              onChange={handleInputChange}
+              disabled={loading}
             />
           </div>
+
           <div className={styles.inputGroup}>
-            <label className={styles.label}>Tipo de Calamidade</label>
+            <label htmlFor="calamity" className={styles.label}>
+              Tipo de Calamidade
+            </label>
             <div className={styles.selectWrapper}>
               <select
+                id="calamity"
                 className={styles.select}
-                value={calamity}
-                onChange={(e) => setCalamity(e.target.value)}
+                value={formData.calamity}
+                onChange={handleInputChange}
+                disabled={loading}
               >
                 <option value="">Selecione o tipo de calamidade</option>
                 {calamities.map((c, i) => (
@@ -76,6 +222,7 @@ export default function NewShelter() {
               />
             </div>
           </div>
+
           <div className={styles.inputGroupRow}>
             <div className={styles.inputGroupHalf}>
               <label htmlFor="address" className={styles.label}>
@@ -86,8 +233,12 @@ export default function NewShelter() {
                 type="text"
                 placeholder="Endereço (Ex: Rua da Paz, 123)"
                 className={styles.input}
+                value={formData.address}
+                onChange={handleInputChange}
+                disabled={loading}
               />
             </div>
+
             <div className={styles.inputGroupHalf}>
               <label htmlFor="city" className={styles.label}>
                 Cidade
@@ -97,29 +248,30 @@ export default function NewShelter() {
                 type="text"
                 placeholder="Cidade"
                 className={styles.input}
+                value={formData.city}
+                onChange={handleInputChange}
+                disabled={loading}
               />
             </div>
+
             <div className={styles.inputGroupHalf}>
               <label htmlFor="state" className={styles.label}>
                 Estado
               </label>
               <div className={styles.selectWrapper}>
-                <select id="state" className={styles.select}>
-                  <option value="">Estado</option>
-                  <option value="SP">SP</option>
-                  <option value="RJ">RJ</option>
-                  <option value="MG">MG</option>
-                  <option value="RS">RS</option>
-                  <option value="SC">SC</option>
-                  <option value="PR">PR</option>
-                  <option value="BA">BA</option>
-                  <option value="PE">PE</option>
-                  <option value="CE">CE</option>
-                  <option value="AM">AM</option>
-                  <option value="PA">PA</option>
-                  <option value="GO">GO</option>
-                  <option value="DF">DF</option>
-                  {/* ...outros estados... */}
+                <select
+                  id="state"
+                  className={styles.select}
+                  value={formData.state}
+                  onChange={handleInputChange}
+                  disabled={loading}
+                >
+                  <option value="">Selecione o estado</option>
+                  {brazilianStates.map((state) => (
+                    <option value={state.value} key={state.value}>
+                      {state.label}
+                    </option>
+                  ))}
                 </select>
                 <Image
                   src="/img/chevron-down.svg"
@@ -130,6 +282,7 @@ export default function NewShelter() {
                 />
               </div>
             </div>
+
             <div className={styles.inputGroupHalf}>
               <label htmlFor="cep" className={styles.label}>
                 CEP
@@ -139,26 +292,40 @@ export default function NewShelter() {
                 type="text"
                 placeholder="CEP"
                 className={styles.input}
+                value={formData.cep}
+                onChange={handleInputChange}
+                disabled={loading}
               />
             </div>
           </div>
+
           <div className={styles.statusRow}>
             <span className={styles.statusLabel}>Abrigo Ativo</span>
             <Switch
-              checked={active}
-              onChange={(e) => setActive(e.target.checked)}
+              checked={formData.active}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, active: checked }))
+              }
+              disabled={loading}
             />
           </div>
+
           <div className={styles.buttonRow}>
             <Button
               type="button"
               variant="ghost"
               className={styles.cancelButton}
+              onClick={handleCancel}
+              disabled={loading}
             >
               Cancelar
             </Button>
-            <Button type="submit" className={styles.saveButton}>
-              Salvar Abrigo
+            <Button
+              type="submit"
+              className={styles.saveButton}
+              disabled={loading}
+            >
+              {loading ? 'Salvando...' : 'Salvar Abrigo'}
             </Button>
           </div>
         </form>

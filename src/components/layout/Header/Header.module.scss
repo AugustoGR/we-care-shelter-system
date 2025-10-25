@@ -229,22 +229,6 @@
   }
 }
 
-.userInfo {
-  padding: 0.5rem 2rem;
-  font-size: $fz_sm;
-  color: $blue_dark;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
-
-  @media (max-width: 768px) {
-    padding: 0.5rem 1rem;
-    font-size: 0.75rem;
-  }
-
-  strong {
-    color: $blue_light;
-  }
-}
 
 .divider {
   margin: 0.5rem 0;

@@ -204,56 +204,113 @@ export default function Sheltered() {
 
       {/* Modal de cadastro */}
       {modalOpen && (
-        <ModalRoot>
+        <ModalRoot onClose={() => setModalOpen(false)}>
+          <ModalHeader
+            title="Cadastrar Novo Abrigado"
+            onClose={() => setModalOpen(false)}
+          />
           <ModalContent>
-            <ModalHeader title="Cadastrar Novo Abrigado" />
-            <form className={styles.form} onSubmit={handleSubmit}>
-              <Input
-                name="nome"
-                placeholder="Nome"
-                value={form.nome}
-                onChange={handleInput}
-                required
-              />
-              <Input
-                name="cpf"
-                placeholder="CPF"
-                value={form.cpf}
-                onChange={handleInput}
-                required
-              />
-              <select
-                name="genero"
-                value={form.genero}
-                onChange={handleInput}
-                required
-                className={styles.select}
-              >
-                <option value="">Gênero</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Feminino">Feminino</option>
-                <option value="Outro">Outro</option>
-              </select>
-              <Input
-                name="dataNascimento"
-                placeholder="Data de Nascimento"
-                type="date"
-                value={form.dataNascimento}
-                onChange={handleInput}
-                required
-              />
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleInput}
-                required
-                className={styles.select}
-              >
-                <option value="Ativo">Ativo</option>
-                <option value="Inativo">Inativo</option>
-                <option value="Pendente">Pendente</option>
-              </select>
-              <Button type="submit">Cadastrar</Button>
+            <form className={styles.modalForm} onSubmit={handleSubmit}>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="nome" className={styles.formLabel}>
+                    Nome Completo
+                  </label>
+                  <Input
+                    id="nome"
+                    name="nome"
+                    placeholder="Digite o nome completo"
+                    value={form.nome}
+                    onChange={handleInput}
+                    required
+                    className={styles.formInput}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="cpf" className={styles.formLabel}>
+                    CPF
+                  </label>
+                  <Input
+                    id="cpf"
+                    name="cpf"
+                    placeholder="000.000.000-00"
+                    value={form.cpf}
+                    onChange={handleInput}
+                    required
+                    className={styles.formInput}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="dataNascimento" className={styles.formLabel}>
+                    Data de Nascimento
+                  </label>
+                  <Input
+                    id="dataNascimento"
+                    name="dataNascimento"
+                    type="date"
+                    value={form.dataNascimento}
+                    onChange={handleInput}
+                    required
+                    className={styles.formInput}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="genero" className={styles.formLabel}>
+                    Gênero
+                  </label>
+                  <select
+                    id="genero"
+                    name="genero"
+                    value={form.genero}
+                    onChange={handleInput}
+                    required
+                    className={styles.formSelect}
+                  >
+                    <option value="">Selecione o gênero</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Outro">Outro</option>
+                  </select>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="status" className={styles.formLabel}>
+                    Status
+                  </label>
+                  <select
+                    id="status"
+                    name="status"
+                    value={form.status}
+                    onChange={handleInput}
+                    required
+                    className={styles.formSelect}
+                  >
+                    <option value="Ativo">Ativo</option>
+                    <option value="Inativo">Inativo</option>
+                    <option value="Pendente">Pendente</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className={styles.modalActions}>
+                <Button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className={styles.cancelButton}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" className={styles.submitButton}>
+                  Cadastrar Abrigado
+                </Button>
+              </div>
             </form>
           </ModalContent>
         </ModalRoot>

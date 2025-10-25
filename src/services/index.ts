@@ -1,7 +1,8 @@
 export { api } from './api'
-export { authService } from './auth.service'
+export { authService } from './http/auth.service'
 export type {
   LoginCredentials,
   RegisterData,
   AuthResponse,
-} from './auth.service'
+} from './http/auth.service'
+export { sheltersService } from './http/shelters.service'
