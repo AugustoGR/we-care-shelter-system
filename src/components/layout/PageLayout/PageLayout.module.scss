@@ -1,0 +1,71 @@
+@import '@/styles/variables.scss';
+
+.container {
+  padding: 32px;
+  background: #fafafb;
+  min-height: calc(100vh - 80px);
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+}
+
+.pageHeader {
+  margin-bottom: 39px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.pageTitle {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2em;
+  color: #171a1f;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.pageSubtitle {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #565d6d;
+  margin: 0;
+}
+
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 32px;
+  height: 44px;
+  background: #0078bd;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.57;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: #006099;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -1,3 +1,4 @@
+import { ModalActions } from './ModalActions'
 import { ModalContent } from './ModalContent'
 import { ModalFooter } from './ModalFooter'
 import { ModalHeader } from './ModalHeader'
@@ -8,6 +9,7 @@ export const Modal = {
   Header: ModalHeader,
   Content: ModalContent,
   Footer: ModalFooter,
+  Actions: ModalActions,
 }
 
-export { ModalRoot, ModalHeader, ModalContent, ModalFooter }
+export { ModalRoot, ModalHeader, ModalContent, ModalFooter, ModalActions }

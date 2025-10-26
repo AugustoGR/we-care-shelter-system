@@ -1,16 +1,34 @@
 'use client'
 import React, { useState } from 'react'
 
-import { Modal } from '@/components/layout/Modal'
+import { FilterBar } from '@/components/layout/FilterBar'
+import { ModalRoot, ModalHeader, ModalContent, ModalActions } from '@/components/layout/Modal'
+import { PageLayout } from '@/components/layout/PageLayout'
+import { TableCard } from '@/components/layout/TableCard'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
+import { CheckboxGroup } from '@/components/ui/CheckboxGroup'
+import { DataTable, Column } from '@/components/ui/DataTable'
+import { FileUpload } from '@/components/ui/FileUpload'
+import { FormField, FormRow } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Textarea } from '@/components/ui/textarea'
 
 import styles from './ShelteredAnimals.module.scss'
 
-const ANIMALS = [
+interface Animal {
+  name: string
+  species: string
+  breed: string
+  age: number
+  sex: string
+  health: string
+  status: string
+  photo: string
+}
+
+const ANIMALS: Animal[] = [
   {
     name: 'Tobby',
     species: 'Cachorro',
@@ -90,12 +108,22 @@ export default function ShelteredAnimalsPage() {
     photo: null as File | null,
   })
   const [search, setSearch] = useState('')
-  const filtered = ANIMALS.filter(
-    (a) =>
+  const [speciesFilter, setSpeciesFilter] = useState('')
+
+  const filtered = ANIMALS.filter((a) => {
+    const matchSearch =
       a.name.toLowerCase().includes(search.toLowerCase()) ||
       a.species.toLowerCase().includes(search.toLowerCase()) ||
-      a.breed.toLowerCase().includes(search.toLowerCase()),
-  )
+      a.breed.toLowerCase().includes(search.toLowerCase())
+    const matchSpecies = speciesFilter ? a.species === speciesFilter : true
+    return matchSearch && matchSpecies
+  })
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+  ) => {
+    setForm({ ...form, [e.target.name]: e.target.value })
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -117,401 +145,254 @@ export default function ShelteredAnimalsPage() {
     })
   }
 
+  const columns: Column<Animal>[] = [
+    {
+      header: 'Foto',
+      accessor: () => <div className={styles.animalPhoto} />,
+      width: '80px',
+    },
+    {
+      header: 'Nome',
+      accessor: 'name',
+      width: '150px',
+    },
+    {
+      header: 'Espécie',
+      accessor: 'species',
+      width: '120px',
+    },
+    {
+      header: 'Raça',
+      accessor: 'breed',
+      width: '150px',
+    },
+    {
+      header: 'Idade',
+      accessor: 'age',
+      width: '100px',
+    },
+    {
+      header: 'Sexo',
+      accessor: 'sex',
+      width: '100px',
+    },
+    {
+      header: 'Status',
+      accessor: (row) => <StatusBadge status={row.status} />,
+      width: '150px',
+    },
+  ]
+
   return (
-    <>
-      <h1 className={styles.title}>Gerenciamento de Animais</h1>
+    <PageLayout
+      title="Gerenciamento de Animais"
+      subtitle="Lista completa de animais abrigados e seus status."
+      onAdd={() => setIsModalOpen(true)}
+      addButtonText="Adicionar Animal"
+    >
+      <FilterBar
+        searchValue={search}
+        searchPlaceholder="Buscar por nome, espécie ou raça..."
+        onSearchChange={setSearch}
 
-      <div className={styles.listBlock}>
-        <div className={styles.listHeader}>
-          <h2 className={styles.listTitle}>Animais no Abrigo</h2>
-          <span className={styles.listDesc}>
-            Lista completa de animais abrigados e seus status.
-          </span>
-          <div className={styles.listActions}>
-            <Select className={styles.select}>
-              <option value="">Todos</option>
-              <option value="Cachorro">Cachorro</option>
-              <option value="Gato">Gato</option>
-            </Select>
-            <Button onClick={() => setIsModalOpen(true)}>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M7 1.16667V12.8333M1.16667 7H12.8333"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Adicionar Animal
-            </Button>
-            <div className={styles.searchWrapper}>
-              <svg
-                className={styles.searchIcon}
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle
-                  cx="7.66667"
-                  cy="7.66667"
-                  r="5.66667"
-                  stroke="#565D6D"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M11.6667 11.6667L14 14"
-                  stroke="#565D6D"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <Input
-                className={styles.searchInput}
-                placeholder="Buscar por nome, espécie ou raça..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Foto</th>
-                <th>Nome</th>
-                <th>Espécie</th>
-                <th>Raça</th>
-                <th>Idade</th>
-                <th>Sexo</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((a, i) => (
-                <tr key={i}>
-                  <td>
-                    <div className={styles.animalPhoto} />
-                  </td>
-                  <td>{a.name}</td>
-                  <td>{a.species}</td>
-                  <td>{a.breed}</td>
-                  <td>{a.age}</td>
-                  <td>{a.sex}</td>
-                  <td>
-                    <span
-                      className={styles[`status${a.status.replace(/ /g, '')}`]}
-                    >
-                      {a.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div className={styles.actions}>
-                      <button type="button">
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 16 16"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M11.334 1.333L14.667 4.667M1.333 14.667l2.953-2.953a1.333 1.333 0 01.488-.314l4.56-1.52a.667.667 0 00.386-.386l1.52-4.56a1.333 1.333 0 01.314-.488L14.667 1.333l-3.334 3.334a1.333 1.333 0 01-.488.314l-4.56 1.52a.667.667 0 00-.386.386l-1.52 4.56a1.333 1.333 0 01-.314.488L1.333 14.667z"
-                            stroke="#171A1F"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </button>
-                      <button type="button">
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 16 16"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M2 4h12M5.333 4V2.667a1.333 1.333 0 011.334-1.334h2.666a1.333 1.333 0 011.334 1.334V4m2 0v9.333a1.333 1.333 0 01-1.334 1.334H4.667a1.333 1.333 0 01-1.334-1.334V4h9.334z"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className={styles.pagination}>
-          <button type="button">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M10 12L6 8l4-4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Previous
-          </button>
-          <span className="active">1</span>
-          <span>2</span>
-          <span>3</span>
-          <button type="button">
-            Next
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M6 12l4-4-4-4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
+        filters={
+          <Select
+            value={speciesFilter}
+            onChange={(e) => setSpeciesFilter(e.target.value)}
+            options={[
+              { value: 'Cachorro', label: 'Cachorro' },
+              { value: 'Gato', label: 'Gato' },
+            ]}
+            placeholder="Espécie"
+          />
+        }
+        onClearFilters={() => {
+          setSearch('')
+          setSpeciesFilter('')
+        }}
+      />
 
+      <TableCard
+        title="Animais no Abrigo"
+        subtitle="Visualize e gerencie todos os animais cadastrados."
+      >
+        <DataTable
+          data={filtered}
+          columns={columns}
+          onEdit={(row) => console.log('Edit', row)}
+          onDelete={(row) => console.log('Delete', row)}
+          emptyMessage="Nenhum animal encontrado."
+        />
+      </TableCard>
+
+      {/* Modal de cadastro */}
       {isModalOpen && (
-        <Modal.Root>
-          <Modal.Header title="Registrar Novo Animal">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className={styles.closeButton}
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M18 6L6 18M6 6l12 12"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </Modal.Header>
-          <Modal.Content>
+        <ModalRoot onClose={() => setIsModalOpen(false)}>
+          <ModalHeader
+            title="Registrar Novo Animal"
+            onClose={() => setIsModalOpen(false)}
+          />
+          <ModalContent>
             <form onSubmit={handleSubmit} className={styles.modalForm}>
-              <span className={styles.formDesc}>
+              <p className={styles.formDesc}>
                 Preencha os detalhes para adicionar um animal ao abrigo.
-              </span>
+              </p>
 
-              <div className={styles.formGroup}>
-                <label>Nome</label>
-                <Input
-                  placeholder="Nome do animal"
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, name: e.target.value }))
-                  }
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Espécie</label>
-                <Input
-                  placeholder="Cachorro, Gato, etc."
-                  value={form.species}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, species: e.target.value }))
-                  }
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Raça</label>
-                <Input
-                  placeholder="Labrador, Siamês, etc."
-                  value={form.breed}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, breed: e.target.value }))
-                  }
-                />
-              </div>
-
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label>Idade (anos)</label>
+              <FormRow columns={1}>
+                <FormField label="Nome" htmlFor="name" required>
                   <Input
+                    id="name"
+                    name="name"
+                    placeholder="Nome do animal"
+                    value={form.name}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </FormField>
+              </FormRow>
+
+              <FormRow>
+                <FormField label="Espécie" htmlFor="species" required>
+                  <Input
+                    id="species"
+                    name="species"
+                    placeholder="Cachorro, Gato, etc."
+                    value={form.species}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </FormField>
+
+                <FormField label="Raça" htmlFor="breed">
+                  <Input
+                    id="breed"
+                    name="breed"
+                    placeholder="Labrador, Siamês, etc."
+                    value={form.breed}
+                    onChange={handleInputChange}
+                  />
+                </FormField>
+              </FormRow>
+
+              <FormRow>
+                <FormField label="Idade (anos)" htmlFor="age">
+                  <Input
+                    id="age"
+                    name="age"
+                    type="number"
                     placeholder="Idade em anos"
                     value={form.age}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, age: e.target.value }))
-                    }
+                    onChange={handleInputChange}
                   />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Sexo</label>
+                </FormField>
+
+                <FormField label="Sexo" htmlFor="sex" required>
                   <Select
+                    id="sex"
+                    name="sex"
                     value={form.sex}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, sex: e.target.value }))
-                    }
-                    className={styles.select}
-                  >
-                    <option value="Macho">Macho</option>
-                    <option value="Fêmea">Fêmea</option>
-                  </Select>
-                </div>
-              </div>
+                    onChange={handleInputChange}
+                    options={[
+                      { value: 'Macho', label: 'Macho' },
+                      { value: 'Fêmea', label: 'Fêmea' },
+                    ]}
+                    required
+                  />
+                </FormField>
+              </FormRow>
 
-              <div className={styles.formGroup}>
-                <label>Estado de Saúde</label>
-                <Select
-                  value={form.health}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, health: e.target.value }))
-                  }
-                  className={styles.select}
-                >
-                  <option value="Saudável">Saudável</option>
-                  <option value="Em Cuidado">Em Cuidado</option>
-                  <option value="Aguardando Adoção">Aguardando Adoção</option>
-                  <option value="Adotado">Adotado</option>
-                  <option value="Reunido">Reunido</option>
-                </Select>
-              </div>
+              <FormRow columns={1}>
+                <FormField label="Estado de Saúde" htmlFor="health" required>
+                  <Select
+                    id="health"
+                    name="health"
+                    value={form.health}
+                    onChange={handleInputChange}
+                    options={[
+                      { value: 'Saudável', label: 'Saudável' },
+                      { value: 'Em Cuidado', label: 'Em Cuidado' },
+                      {
+                        value: 'Aguardando Adoção',
+                        label: 'Aguardando Adoção',
+                      },
+                      { value: 'Adotado', label: 'Adotado' },
+                      { value: 'Reunido', label: 'Reunido' },
+                    ]}
+                    required
+                  />
+                </FormField>
+              </FormRow>
 
-              <div className={styles.formGroup}>
-                <label>Requisitos de Cuidado</label>
-                <Textarea
-                  className={styles.textarea}
-                  placeholder="Descreva quaisquer necessidades especiais ou requisitos de cuidado."
-                  value={form.care}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, care: e.target.value }))
-                  }
-                />
-              </div>
+              <FormRow columns={1}>
+                <FormField label="Requisitos de Cuidado" htmlFor="care">
+                  <Textarea
+                    id="care"
+                    name="care"
+                    placeholder="Descreva quaisquer necessidades especiais ou requisitos de cuidado."
+                    value={form.care}
+                    onChange={handleInputChange}
+                  />
+                </FormField>
+              </FormRow>
 
-              <div>
-                <span className={styles.vaccineLabel}>Vacinação</span>
-                <div className={styles.vaccinesRow}>
-                  <label>
-                    <Checkbox
-                      checked={form.rabies}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, rabies: e.target.checked }))
-                      }
-                    />
-                    Raiva
-                  </label>
-                  <label>
-                    <Checkbox
-                      checked={form.cinomose}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, cinomose: e.target.checked }))
-                      }
-                    />
-                    Cinomose
-                  </label>
-                  <label>
-                    <Checkbox
-                      checked={form.parvo}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, parvo: e.target.checked }))
-                      }
-                    />
-                    Parvovirose
-                  </label>
-                  <label>
-                    <Checkbox
-                      checked={form.felina}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, felina: e.target.checked }))
-                      }
-                    />
-                    Felina
-                  </label>
-                </div>
-              </div>
+              <CheckboxGroup
+                label="Vacinação"
+                options={[
+                  {
+                    label: 'Raiva',
+                    value: 'rabies',
+                    checked: form.rabies,
+                    onChange: (checked) =>
+                      setForm((f) => ({ ...f, rabies: checked })),
+                  },
+                  {
+                    label: 'Cinomose',
+                    value: 'cinomose',
+                    checked: form.cinomose,
+                    onChange: (checked) =>
+                      setForm((f) => ({ ...f, cinomose: checked })),
+                  },
+                  {
+                    label: 'Parvovirose',
+                    value: 'parvo',
+                    checked: form.parvo,
+                    onChange: (checked) =>
+                      setForm((f) => ({ ...f, parvo: checked })),
+                  },
+                  {
+                    label: 'Felina',
+                    value: 'felina',
+                    checked: form.felina,
+                    onChange: (checked) =>
+                      setForm((f) => ({ ...f, felina: checked })),
+                  },
+                ]}
+              />
 
-              <div className={styles.fileUpload}>
-                <label className={styles.fileLabel}>Foto do Animal</label>
-                <label htmlFor="photo-upload" className={styles.fileButton}>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M14.667 10v2.667A1.333 1.333 0 0113.333 14H2.667a1.333 1.333 0 01-1.334-1.333V10M11.333 5.333L8 2m0 0L4.667 5.333M8 2v8"
-                      stroke="#171A1F"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  {form.photo ? form.photo.name : 'Escolher arquivo'}
-                </label>
-                <input
-                  id="photo-upload"
-                  type="file"
-                  accept="image/*"
-                  className={styles.fileInput}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      photo: e.target.files?.[0] || null,
-                    }))
-                  }
-                />
-                <span className={styles.fileDesc}>
-                  Envie uma foto clara do animal.
-                </span>
-              </div>
-
-              <div className={styles.formActions}>
+              <FileUpload
+                id="photo-upload"
+                label="Foto do Animal"
+                description="Envie uma foto clara do animal."
+                accept="image/*"
+                value={form.photo}
+                onChange={(file) => setForm((f) => ({ ...f, photo: file }))}
+              />
+              <ModalActions>
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="secondary"
                   onClick={() => setIsModalOpen(false)}
                 >
-                  Cancelar
+              Cancelar
                 </Button>
-                <Button type="submit">Salvar Animal</Button>
-              </div>
+                <Button type="submit" variant="primary">
+              Salvar Animal
+                </Button>
+              </ModalActions>
             </form>
-          </Modal.Content>
-        </Modal.Root>
+          </ModalContent>
+        </ModalRoot>
       )}
-    </>
+    </PageLayout>
   )
 }

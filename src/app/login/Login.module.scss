@@ -85,61 +85,12 @@
 	margin: 0 auto;
 }
 
-.inputGroup {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.label {
-	font-family: 'Open Sans', sans-serif;
-	font-size: 12px;
-	line-height: 1.6666666666666667em;
-	color: #171A1F;
-}
-
-.input {
-	border: 1px solid #DEE1E6;
-	border-radius: 6px;
-	height: 39px;
-	font-size: 14px;
-	line-height: 1.5714285714285714em;
-	color: #565D6D;
-	padding: 8px 12px;
-	font-family: 'Open Sans', sans-serif;
-
-	&::placeholder {
-		color: #565D6D;
-		font-family: 'Open Sans', sans-serif;
-	}
-}
-
 .button {
 	margin-top: 16px;
 	height: 40px;
-	background: #0079BF;
-	color: #fff;
-	border-radius: 6px;
 	font-size: 14px;
 	line-height: 1.5714285714285714em;
 	font-family: 'Open Sans', sans-serif;
-	border: none;
-
-	&:hover {
-		background: #006ba6;
-	}
-
-	&:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-}
-
-.error {
-	color: #D32F2F;
-	font-size: 12px;
-	font-family: 'Open Sans', sans-serif;
-	margin-top: 4px;
 }
 
 .errorMessage {

@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
+import { FormField } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -95,42 +96,31 @@ export default function Login() {
           {apiError && <div className={styles.errorMessage}>{apiError}</div>}
 
           <form className={styles.form} onSubmit={handleSubmit}>
-            <div className={styles.inputGroup}>
-              <label htmlFor="email" className={styles.label}>
-                Email
-              </label>
+            <FormField label="Email" error={errors.email}>
               <Input
                 id="email"
                 type="email"
                 placeholder="seuemail@exemplo.com"
-                className={styles.input}
                 value={formData.email}
                 onChange={handleChange}
                 disabled={isLoading}
               />
-              {errors.email && (
-                <span className={styles.error}>{errors.email}</span>
-              )}
-            </div>
-            <div className={styles.inputGroup}>
-              <label htmlFor="password" className={styles.label}>
-                Senha
-              </label>
+            </FormField>
+
+            <FormField label="Senha" error={errors.password}>
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                className={styles.input}
                 value={formData.password}
                 onChange={handleChange}
                 disabled={isLoading}
               />
-              {errors.password && (
-                <span className={styles.error}>{errors.password}</span>
-              )}
-            </div>
+            </FormField>
+
             <Button
               type="submit"
+              variant="primary"
               className={styles.button}
               disabled={isLoading}
             >

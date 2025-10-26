@@ -1,13 +1,3 @@
-.container {
-  padding: 32px;
-  background: #fafafb;
-  min-height: calc(100vh - 80px);
-
-  @media (max-width: 768px) {
-    padding: 16px;
-  }
-}
-
 .title {
   font-family: 'Open Sans', sans-serif;
   font-size: 30px;
@@ -122,55 +112,6 @@
   align-items: center;
   gap: 8px;
   flex: 1;
-}
-
-.statusLine {
-  width: 360px;
-  height: 0;
-  border-top: 1px solid #dee1e6;
-  position: absolute;
-  left: 0;
-  top: 245px;
-  display: none;
-}
-
-.statusActive,
-.statusInactive {
-  width: 44px;
-  height: 24px;
-  border-radius: 12px;
-  border: 2px solid #000000;
-  position: relative;
-  display: flex;
-  align-items: center;
-  transition: all 0.2s ease;
-}
-
-.statusActive {
-  background: #0078bd;
-  border-color: #0078bd;
-}
-
-.statusInactive {
-  background: #dee1e6;
-  border-color: #dee1e6;
-}
-
-.statusToggle {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #ffffff;
-  position: absolute;
-  transition: all 0.2s ease;
-}
-
-.statusActive .statusToggle {
-  right: 2px;
-}
-
-.statusInactive .statusToggle {
-  left: 2px;
 }
 
 .statusTextActive,

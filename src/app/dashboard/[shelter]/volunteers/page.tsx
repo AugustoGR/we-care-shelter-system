@@ -1,12 +1,29 @@
 'use client'
 import React, { useState } from 'react'
 
+import { FilterBar } from '@/components/layout/FilterBar'
+import { ModalRoot, ModalHeader, ModalContent, ModalActions } from '@/components/layout/Modal'
+import { PageLayout } from '@/components/layout/PageLayout'
+import { TableCard } from '@/components/layout/TableCard'
 import { Button } from '@/components/ui/button'
+import { DataTable, Column } from '@/components/ui/DataTable'
+import { FormField, FormRow } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 
 import styles from './Volunteers.module.scss'
 
-const VOLUNTEERS = [
+interface Volunteer {
+  name: string
+  phone: string
+  email: string
+  skills: string[]
+  status: string
+  lastActivity: string
+}
+
+const VOLUNTEERS: Volunteer[] = [
   {
     name: 'Ana Silva',
     phone: '(11) 98765-4321',
@@ -57,147 +74,215 @@ const VOLUNTEERS = [
   },
 ]
 
+const initialForm = {
+  name: '',
+  phone: '',
+  email: '',
+  skills: '',
+  status: 'Ativo',
+}
+
 export default function VolunteersPage() {
   const [search, setSearch] = useState('')
-  const filtered = VOLUNTEERS.filter(
-    (v) =>
+  const [statusFilter, setStatusFilter] = useState('')
+  const [modalOpen, setModalOpen] = useState(false)
+  const [form, setForm] = useState(initialForm)
+
+  const filtered = VOLUNTEERS.filter((v) => {
+    const matchSearch =
       v.name.toLowerCase().includes(search.toLowerCase()) ||
-      v.email.toLowerCase().includes(search.toLowerCase()),
-  )
+      v.email.toLowerCase().includes(search.toLowerCase())
+    const matchStatus = statusFilter ? v.status === statusFilter : true
+    return matchSearch && matchStatus
+  })
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    setForm({ ...form, [e.target.name]: e.target.value })
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('Form submitted:', form)
+    setModalOpen(false)
+    setForm(initialForm)
+  }
+
+  const columns: Column<Volunteer>[] = [
+    {
+      header: 'Nome',
+      accessor: 'name',
+      width: '200px',
+    },
+    {
+      header: 'Contato',
+      accessor: 'phone',
+      width: '150px',
+    },
+    {
+      header: 'Email',
+      accessor: 'email',
+      width: '220px',
+    },
+    {
+      header: 'Habilidades',
+      accessor: (row) => (
+        <div className={styles.skillsCell}>
+          {row.skills.map((skill, idx) => (
+            <span key={idx} className={styles.skillTag}>
+              {skill}
+            </span>
+          ))}
+        </div>
+      ),
+      width: '250px',
+    },
+    {
+      header: 'Status',
+      accessor: (row) => <StatusBadge status={row.status} />,
+      width: '120px',
+    },
+    {
+      header: 'Última Atividade',
+      accessor: 'lastActivity',
+      width: '160px',
+    },
+  ]
 
   return (
-    <>
-      <h1 className={styles.title}>Gestão de Voluntários</h1>
-      <div className={styles.metricsRow}>
-        <div className={styles.metricCard}>
-          <span className={styles.metricLabel}>Total de Voluntários</span>
-          <span className={styles.metricValue}>45</span>
-          <span className={styles.metricSub}>+5% este mês</span>
-        </div>
-        <div className={styles.metricCard}>
-          <span className={styles.metricLabel}>Voluntários Ativos Hoje</span>
-          <span className={styles.metricValue}>28</span>
-          <span className={styles.metricSub}>Em 3 abrigos</span>
-        </div>
-        <div className={styles.metricCard}>
-          <span className={styles.metricLabel}>Próximos Turnos</span>
-          <span className={styles.metricValue}>12</span>
-          <span className={styles.metricSub}>Nas próximas 24h</span>
-        </div>
-      </div>
+    <PageLayout
+      title="Gestão de Voluntários"
+      subtitle="Visualize e gerencie todos os voluntários cadastrados."
+      onAdd={() => setModalOpen(true)}
+      addButtonText="Adicionar Voluntário"
+    >
+      <FilterBar
+        searchValue={search}
+        searchPlaceholder="Buscar voluntário..."
+        onSearchChange={setSearch}
 
-      <div className={styles.listSection}>
-        <div className={styles.listHeader}>
-          <div>
-            <h2 className={styles.listTitle}>Lista de Voluntários</h2>
-            <span className={styles.listDesc}>
-              Gerencie os voluntários registrados e suas informações.
-            </span>
-          </div>
-          <div className={styles.actions}>
-            <Input
-              className={styles.searchInput}
-              placeholder="Buscar voluntário..."
-              value={search}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSearch(e.target.value)
-              }
-            />
-            <Button className={styles.addBtn}>Adicionar Voluntário</Button>
-          </div>
-        </div>
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Contato</th>
-                <th>Email</th>
-                <th>Habilidades</th>
-                <th>Status</th>
-                <th>Última Atividade</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((v, i) => (
-                <tr key={i}>
-                  <td>{v.name}</td>
-                  <td>{v.phone}</td>
-                  <td>{v.email}</td>
-                  <td>
-                    {v.skills.map((s, idx) => (
-                      <span key={idx} className={styles.skillTag}>
-                        {s}
-                      </span>
-                    ))}
-                  </td>
-                  <td>
-                    <span className={styles[`status${v.status}`]}>
-                      {v.status}
-                    </span>
-                  </td>
-                  <td>{v.lastActivity}</td>
-                  <td>
-                    <Button variant="ghost">...</Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        filters={
+          <Select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            options={[
+              { value: 'Ativo', label: 'Ativo' },
+              { value: 'Inativo', label: 'Inativo' },
+              { value: 'Ausente', label: 'Ausente' },
+            ]}
+            placeholder="Status"
+          />
+        }
+        onClearFilters={() => {
+          setSearch('')
+          setStatusFilter('')
+        }}
+      />
 
-      <div className={styles.bottomRow}>
-        <div className={styles.tasksBlock}>
-          <h3>Atribuição de Tarefas</h3>
-          <ul>
-            <li>
-              Distribuição de Alimentos (Abrigo A)
-              <span className={styles.taskTag}>Pendente</span>
-            </li>
-            <li>
-              Triagem de Doações (Centro Logístico)
-              <span className={styles.taskTag}>Atribuída (Ana Silva)</span>
-            </li>
-            <li>
-              Apoio Emocional (Abrigo C)
-              <span className={styles.taskTag}>Pendente</span>
-            </li>
-            <li>
-              Limpeza Geral (Abrigo B)
-              <span className={styles.taskTag}>Pendente</span>
-            </li>
-            <li>
-              Cuidado de Animais (Abrigo A)
-              <span className={styles.taskTag}>Atribuída (Sofia Oliveira)</span>
-            </li>
-          </ul>
-          <Button variant="ghost" className={styles.seeAllBtn}>
-            Ver Todas as Tarefas
-          </Button>
-        </div>
-        <div className={styles.shiftsBlock}>
-          <h3>Disponibilidade & Turnos</h3>
-          <ul>
-            <li>
-              24/07, 08:00 - 12:00 <span>Carlos Mendes</span>
-            </li>
-            <li>
-              24/07, 14:00 - 18:00 <span>Ana Silva</span>
-            </li>
-            <li>
-              25/07, 09:00 - 13:00 <span>Sofia Oliveira</span>
-            </li>
-            <li>
-              25/07, 10:00 - 14:00 <span>Miguel Santos</span>
-            </li>
-          </ul>
-          <Button variant="ghost" className={styles.seeAllBtn}>
-            Ver Calendário Completo
-          </Button>
-        </div>
-      </div>
-    </>
+      <TableCard
+        title="Lista de Voluntários"
+        subtitle="Gerencie os voluntários registrados e suas informações."
+      >
+        <DataTable
+          data={filtered}
+          columns={columns}
+          onEdit={(row) => console.log('Edit', row)}
+          onDelete={(row) => console.log('Delete', row)}
+          emptyMessage="Nenhum voluntário encontrado."
+        />
+      </TableCard>
+
+      {/* Modal de cadastro */}
+      {modalOpen && (
+        <ModalRoot onClose={() => setModalOpen(false)}>
+          <ModalHeader
+            title="Cadastrar Novo Voluntário"
+            onClose={() => setModalOpen(false)}
+          />
+          <ModalContent>
+            <form className={styles.modalForm} onSubmit={handleSubmit}>
+              <FormRow columns={1}>
+                <FormField label="Nome Completo" htmlFor="name" required>
+                  <Input
+                    id="name"
+                    name="name"
+                    placeholder="Digite o nome completo"
+                    value={form.name}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </FormField>
+              </FormRow>
+
+              <FormRow>
+                <FormField label="Telefone" htmlFor="phone" required>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    placeholder="(00) 00000-0000"
+                    value={form.phone}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </FormField>
+
+                <FormField label="E-mail" htmlFor="email" required>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="email@exemplo.com"
+                    value={form.email}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </FormField>
+              </FormRow>
+
+              <FormRow>
+                <FormField label="Habilidades" htmlFor="skills">
+                  <Input
+                    id="skills"
+                    name="skills"
+                    placeholder="Ex: Enfermagem, Culinária"
+                    value={form.skills}
+                    onChange={handleInputChange}
+                  />
+                </FormField>
+
+                <FormField label="Status" htmlFor="status" required>
+                  <Select
+                    id="status"
+                    name="status"
+                    value={form.status}
+                    onChange={handleInputChange}
+                    options={[
+                      { value: 'Ativo', label: 'Ativo' },
+                      { value: 'Inativo', label: 'Inativo' },
+                      { value: 'Ausente', label: 'Ausente' },
+                    ]}
+                    required
+                  />
+                </FormField>
+              </FormRow>
+
+              <ModalActions>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setModalOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" variant="primary">
+                  Cadastrar Voluntário
+                </Button>
+              </ModalActions>
+            </form>
+          </ModalContent>
+        </ModalRoot>
+      )}
+    </PageLayout>
   )
 }

@@ -1,120 +1,11 @@
-.volunteersPage {
-  padding: 32px 24px;
-  background: #f7f8fa;
-}
+// Volunteers - Estilos específicos
 
-.title {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 1.2em;
-  color: #171a1f;
-  margin-bottom: 24px;
-  letter-spacing: -0.5px;
-}
-
-.metricsRow {
+.skillsCell {
   display: flex;
-  gap: 24px;
-  margin-bottom: 32px;
   flex-wrap: wrap;
-}
-.metricCard {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow:
-    0 0 1px 0 rgba(23, 26, 31, 0.05),
-    0 0 2px 0 rgba(23, 26, 31, 0.08);
-  padding: 24px 32px;
-  min-width: 220px;
-  flex: 1 1 calc(25% - 18px);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  @media (max-width: 1024px) {
-    flex: 1 1 calc(50% - 12px);
-  }
-
-  @media (max-width: 640px) {
-    flex: 1 1 100%;
-  }
-}
-.metricLabel {
-  color: #565d6d;
-  font-size: 1rem;
-}
-.metricValue {
-  color: #171a1f;
-  font-size: 2rem;
-  font-weight: 700;
-}
-.metricSub {
-  color: #565d6d;
-  font-size: 0.9rem;
+  gap: 6px;
 }
 
-.listSection {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow:
-    0 0 1px 0 rgba(23, 26, 31, 0.05),
-    0 0 2px 0 rgba(23, 26, 31, 0.08);
-  padding: 32px;
-  margin-bottom: 32px;
-}
-.listHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 24px;
-}
-.listTitle {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #171a1f;
-}
-.listDesc {
-  color: #565d6d;
-  font-size: 1rem;
-}
-.actions {
-  display: flex;
-  gap: 16px;
-}
-.searchInput {
-  min-width: 200px;
-}
-.addBtn {
-  background: #0078bd;
-  color: #fff;
-  font-weight: 600;
-  border-radius: 6px;
-  padding: 0 20px;
-}
-.tableWrapper {
-  overflow-x: auto;
-}
-.table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background: #fff;
-}
-.table th,
-.table td {
-  padding: 12px 16px;
-  text-align: left;
-  font-size: 1rem;
-}
-.table th {
-  color: #565d6d;
-  font-weight: 600;
-  border-bottom: 2px solid #f3f4f6;
-}
-.table tr:not(:last-child) td {
-  border-bottom: 1px solid #f3f4f6;
-}
 .skillTag {
   display: inline-block;
   background: #f3f4f6;
@@ -122,87 +13,13 @@
   border-radius: 11px;
   padding: 2px 12px;
   font-size: 0.9rem;
-  margin-right: 6px;
-  margin-bottom: 2px;
+  font-weight: 500;
 }
-.statusAtivo {
-  background: #e6f7ee;
-  color: #1e9e6a;
-  border-radius: 11px;
-  padding: 2px 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-.statusInativo {
-  background: #f3f4f6;
-  color: #b0b3bb;
-  border-radius: 11px;
-  padding: 2px 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-.statusAusente {
-  background: #ffeaea;
-  color: #e55d66;
-  border-radius: 11px;
-  padding: 2px 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-.bottomRow {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-.tasksBlock,
-.shiftsBlock {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow:
-    0 0 1px 0 rgba(23, 26, 31, 0.05),
-    0 0 2px 0 rgba(23, 26, 31, 0.08);
-  padding: 24px 32px;
-  flex: 1 1 calc(50% - 12px);
-  min-width: 320px;
 
-  @media (max-width: 768px) {
-    flex: 1 1 100%;
-    min-width: 100%;
-  }
-}
-.tasksBlock h3,
-.shiftsBlock h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #171a1f;
-  margin-bottom: 16px;
-}
-.tasksBlock ul,
-.shiftsBlock ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 16px 0;
-}
-.tasksBlock li,
-.shiftsBlock li {
+// Modal Form
+.modalForm {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0;
-  font-size: 1rem;
-  color: #171a1f;
-}
-.taskTag {
-  background: #f3f4f6;
-  color: #0078bd;
-  border-radius: 11px;
-  padding: 2px 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-left: 12px;
-}
-.seeAllBtn {
-  margin-top: 8px;
-  border-radius: 6px;
-  font-weight: 600;
+  flex-direction: column;
+  gap: 20px;
+  padding: 4px 0;
 }

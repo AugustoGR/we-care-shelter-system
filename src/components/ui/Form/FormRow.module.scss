@@ -1,0 +1,20 @@
+.formRow {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+
+  &[data-columns='1'] {
+    display: block;
+  }
+
+  &[data-columns='3'] {
+    > * {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+}

@@ -1,15 +1,27 @@
 'use client'
 import React, { useState } from 'react'
 
-import Image from 'next/image'
-
-import { ModalContent } from '@/components/layout/Modal/ModalContent'
-import { ModalHeader } from '@/components/layout/Modal/ModalHeader'
-import { ModalRoot } from '@/components/layout/Modal/ModalRoot'
+import { FilterBar } from '@/components/layout/FilterBar'
+import { ModalContent, ModalHeader, ModalRoot, ModalActions } from '@/components/layout/Modal'
+import { PageLayout } from '@/components/layout/PageLayout'
+import { TableCard } from '@/components/layout/TableCard'
 import { Button } from '@/components/ui/button'
+import { DataTable, Column } from '@/components/ui/DataTable'
+import { FormField, FormRow } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 
 import styles from './Sheltered.module.scss'
+
+// eslint-disable-next-line no-unused-vars
+interface Sheltered {
+  nome: string
+  cpf: string
+  genero: string
+  dataNascimento: string
+  status: string
+}
 
 const initialForm = {
   nome: '',
@@ -22,7 +34,12 @@ const initialForm = {
 export default function Sheltered() {
   const [modalOpen, setModalOpen] = useState(false)
   const [form, setForm] = useState(initialForm)
-  const [sheltered, setSheltered] = useState([
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [generoFilter, setGeneroFilter] = useState('')
+  const [idadeFilter, setIdadeFilter] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [sheltered, setSheltered] = useState<Sheltered[]>([
     {
       nome: 'João Silva',
       cpf: '123.456.789-00',
@@ -60,6 +77,44 @@ export default function Sheltered() {
     },
   ])
 
+  // Filtros
+  const filtered = sheltered.filter((item) => {
+    const matchSearch =
+      item.nome.toLowerCase().includes(search.toLowerCase()) ||
+      item.cpf.includes(search)
+    const matchStatus = !statusFilter || item.status === statusFilter
+    const matchGenero = !generoFilter || item.genero === generoFilter
+
+    // Filtro de idade
+    let matchIdade = true
+    if (idadeFilter) {
+      const today = new Date()
+      const birthDate = new Date(
+        item.dataNascimento.split('/').reverse().join('-')
+      )
+      const age = today.getFullYear() - birthDate.getFullYear()
+
+      if (idadeFilter === '0-17') matchIdade = age >= 0 && age <= 17
+      else if (idadeFilter === '18-30') matchIdade = age >= 18 && age <= 30
+      else if (idadeFilter === '31-50') matchIdade = age >= 31 && age <= 50
+      else if (idadeFilter === '51+') matchIdade = age >= 51
+    }
+
+    return matchSearch && matchStatus && matchGenero && matchIdade
+  })
+
+  // Configuração de paginação
+  const pageSize = 10
+  const totalItems = filtered.length
+  const totalPages = Math.ceil(totalItems / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedData = filtered.slice(startIndex, endIndex)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
   const handleInput = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -73,134 +128,108 @@ export default function Sheltered() {
     setModalOpen(false)
   }
 
+  const columns: Column<Sheltered>[] = [
+    {
+      header: 'Nome',
+      accessor: 'nome',
+      width: '200px',
+    },
+    {
+      header: 'CPF',
+      accessor: 'cpf',
+      width: '150px',
+    },
+    {
+      header: 'Data de Nascimento',
+      accessor: 'dataNascimento',
+      width: '180px',
+    },
+    {
+      header: 'Gênero',
+      accessor: 'genero',
+      width: '120px',
+    },
+    {
+      header: 'Status',
+      accessor: (row) => <StatusBadge status={row.status} />,
+      width: '120px',
+    },
+  ]
+
   return (
-    <>
-      {/* Page Header */}
-      <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Gestão de Abrigados</h1>
-        <p className={styles.pageSubtitle}>
-          Visualize e gerencie todos os indivíduos abrigados.
-        </p>
-        <Button onClick={() => setModalOpen(true)} className={styles.addButton}>
-          <Image
-            src="/img/icons/circle-plus-icon.svg"
-            alt=""
-            width={20}
-            height={20}
-          />
-          Adicionar Novo Abrigados
-        </Button>
-      </div>
+    <PageLayout
+      title="Gestão de Abrigados"
+      subtitle="Visualize e gerencie todos os indivíduos abrigados."
+      onAdd={() => setModalOpen(true)}
+      addButtonText="Adicionar Novo Abrigado"
+    >
+      <FilterBar
+        searchValue={search}
+        searchPlaceholder="Buscar abrigado..."
+        onSearchChange={setSearch}
 
-      {/* Filters and Search */}
-      <div className={styles.filtersRow}>
-        <div className={styles.searchBox}>
-          <Image
-            src="/img/icons/search-icon.svg"
-            alt=""
-            width={16}
-            height={16}
-            className={styles.searchIcon}
-          />
-          <input
-            type="text"
-            placeholder="Buscar abrigado..."
-            className={styles.searchInput}
-          />
-        </div>
+        filters={
+          <>
+            <Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              options={[
+                { value: 'Ativo', label: 'Ativo' },
+                { value: 'Inativo', label: 'Inativo' },
+                { value: 'Pendente', label: 'Pendente' },
+              ]}
+              placeholder="Status"
+            />
+            <Select
+              value={generoFilter}
+              onChange={(e) => setGeneroFilter(e.target.value)}
+              options={[
+                { value: 'Masculino', label: 'Masculino' },
+                { value: 'Feminino', label: 'Feminino' },
+                { value: 'Outro', label: 'Outro' },
+              ]}
+              placeholder="Gênero"
+            />
+            <Select
+              value={idadeFilter}
+              onChange={(e) => setIdadeFilter(e.target.value)}
+              options={[
+                { value: '0-18', label: '0-18 anos' },
+                { value: '19-30', label: '19-30 anos' },
+                { value: '31-50', label: '31-50 anos' },
+                { value: '51+', label: '51+ anos' },
+              ]}
+              placeholder="Idade"
+            />
+          </>
+        }
+        onClearFilters={() => {
+          setSearch('')
+          setStatusFilter('')
+          setGeneroFilter('')
+          setIdadeFilter('')
+        }}
+      />
 
-        <select name="status" className={styles.filterSelect}>
-          <option value="">Status</option>
-          <option value="Ativo">Ativo</option>
-          <option value="Inativo">Inativo</option>
-          <option value="Pendente">Pendente</option>
-        </select>
-
-        <select name="genero" className={styles.filterSelect}>
-          <option value="">Gênero</option>
-          <option value="Masculino">Masculino</option>
-          <option value="Feminino">Feminino</option>
-          <option value="Outro">Outro</option>
-        </select>
-
-        <select name="idade" className={styles.filterSelect}>
-          <option value="">Idade</option>
-          <option value="0-18">0-18 anos</option>
-          <option value="19-30">19-30 anos</option>
-          <option value="31-50">31-50 anos</option>
-          <option value="51+">51+ anos</option>
-        </select>
-
-        <button className={styles.clearButton}>
-          <Image
-            src="/img/icons/circle-x-icon.svg"
-            alt=""
-            width={16}
-            height={16}
-          />
-          Limpar Filtros
-        </button>
-      </div>
-
-      {/* Table Card */}
-      <div className={styles.tableCard}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Lista de Abrigados</h2>
-          <p className={styles.cardSubtitle}>
-            Gerencie os detalhes de cada indivíduo abrigado.
-          </p>
-        </div>
-
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>CPF</th>
-                <th>Data de Nascimento</th>
-                <th>Gênero</th>
-                <th>Status</th>
-                <th className={styles.actionsHeader}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sheltered.map((item, idx) => (
-                <tr key={idx}>
-                  <td className={styles.nameCell}>{item.nome}</td>
-                  <td>{item.cpf}</td>
-                  <td>{item.dataNascimento}</td>
-                  <td>{item.genero}</td>
-                  <td>
-                    <span
-                      className={`${styles.statusBadge} ${styles[`status${item.status}`]}`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className={styles.actionsCell}>
-                    <button className={styles.actionButton} title="Editar">
-                      <Image
-                        src="/img/icons/square-pen-icon.svg"
-                        alt="Editar"
-                        width={16}
-                        height={16}
-                      />
-                    </button>
-                    <button className={styles.actionButton} title="Excluir">
-                      <Image
-                        src="/img/icons/trash-icon.svg"
-                        alt="Excluir"
-                        width={16}
-                        height={16}
-                      />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <TableCard
+        title="Lista de Abrigados"
+        subtitle="Gerencie os detalhes de cada indivíduo abrigado."
+      >
+        <DataTable
+          data={paginatedData}
+          columns={columns}
+          onEdit={(row) => console.log('Edit', row)}
+          onDelete={(row) => console.log('Delete', row)}
+          emptyMessage="Nenhum abrigado encontrado."
+          pagination={{
+            currentPage,
+            totalPages,
+            onPageChange: handlePageChange,
+            pageSize,
+            totalItems,
+          }}
+        />
+      </TableCard>
 
       {/* Modal de cadastro */}
       {modalOpen && (
@@ -211,11 +240,8 @@ export default function Sheltered() {
           />
           <ModalContent>
             <form className={styles.modalForm} onSubmit={handleSubmit}>
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label htmlFor="nome" className={styles.formLabel}>
-                    Nome Completo
-                  </label>
+              <FormRow columns={1}>
+                <FormField label="Nome Completo" htmlFor="nome" required>
                   <Input
                     id="nome"
                     name="nome"
@@ -223,16 +249,12 @@ export default function Sheltered() {
                     value={form.nome}
                     onChange={handleInput}
                     required
-                    className={styles.formInput}
                   />
-                </div>
-              </div>
+                </FormField>
+              </FormRow>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label htmlFor="cpf" className={styles.formLabel}>
-                    CPF
-                  </label>
+              <FormRow>
+                <FormField label="CPF" htmlFor="cpf" required>
                   <Input
                     id="cpf"
                     name="cpf"
@@ -240,14 +262,10 @@ export default function Sheltered() {
                     value={form.cpf}
                     onChange={handleInput}
                     required
-                    className={styles.formInput}
                   />
-                </div>
+                </FormField>
 
-                <div className={styles.formGroup}>
-                  <label htmlFor="dataNascimento" className={styles.formLabel}>
-                    Data de Nascimento
-                  </label>
+                <FormField label="Data de Nascimento" htmlFor="dataNascimento" required>
                   <Input
                     id="dataNascimento"
                     name="dataNascimento"
@@ -255,66 +273,59 @@ export default function Sheltered() {
                     value={form.dataNascimento}
                     onChange={handleInput}
                     required
-                    className={styles.formInput}
                   />
-                </div>
-              </div>
+                </FormField>
+              </FormRow>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label htmlFor="genero" className={styles.formLabel}>
-                    Gênero
-                  </label>
-                  <select
+              <FormRow>
+                <FormField label="Gênero" htmlFor="genero" required>
+                  <Select
                     id="genero"
                     name="genero"
                     value={form.genero}
                     onChange={handleInput}
+                    options={[
+                      { value: 'Masculino', label: 'Masculino' },
+                      { value: 'Feminino', label: 'Feminino' },
+                      { value: 'Outro', label: 'Outro' },
+                    ]}
+                    placeholder="Selecione o gênero"
                     required
-                    className={styles.formSelect}
-                  >
-                    <option value="">Selecione o gênero</option>
-                    <option value="Masculino">Masculino</option>
-                    <option value="Feminino">Feminino</option>
-                    <option value="Outro">Outro</option>
-                  </select>
-                </div>
+                  />
+                </FormField>
 
-                <div className={styles.formGroup}>
-                  <label htmlFor="status" className={styles.formLabel}>
-                    Status
-                  </label>
-                  <select
+                <FormField label="Status" htmlFor="status" required>
+                  <Select
                     id="status"
                     name="status"
                     value={form.status}
                     onChange={handleInput}
+                    options={[
+                      { value: 'Ativo', label: 'Ativo' },
+                      { value: 'Inativo', label: 'Inativo' },
+                      { value: 'Pendente', label: 'Pendente' },
+                    ]}
                     required
-                    className={styles.formSelect}
-                  >
-                    <option value="Ativo">Ativo</option>
-                    <option value="Inativo">Inativo</option>
-                    <option value="Pendente">Pendente</option>
-                  </select>
-                </div>
-              </div>
+                  />
+                </FormField>
+              </FormRow>
 
-              <div className={styles.modalActions}>
+              <ModalActions>
                 <Button
                   type="button"
+                  variant="secondary"
                   onClick={() => setModalOpen(false)}
-                  className={styles.cancelButton}
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" className={styles.submitButton}>
+                <Button type="submit" variant="primary">
                   Cadastrar Abrigado
                 </Button>
-              </div>
+              </ModalActions>
             </form>
           </ModalContent>
         </ModalRoot>
       )}
-    </>
+    </PageLayout>
   )
 }

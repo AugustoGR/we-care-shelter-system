@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import Image from 'next/image'
 
 import { Button } from '@/components/ui/button'
+import { FormField } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -112,113 +113,60 @@ export default function Logon() {
         {apiError && <div className={styles.errorMessage}>{apiError}</div>}
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.inputGroup}>
-            <label htmlFor="name" className={styles.label}>
-              Nome
-            </label>
-            <div className={styles.inputIconWrapper}>
-              <Image
-                src="/img/user-icon.svg"
-                alt="User"
-                width={16}
-                height={16}
-                className={styles.icon}
-              />
-              <Input
-                id="name"
-                type="text"
-                placeholder="Seu nome completo"
-                className={styles.input}
-                value={formData.name}
-                onChange={handleChange}
-                disabled={isLoading}
-              />
-            </div>
-            {errors.name && <span className={styles.error}>{errors.name}</span>}
-          </div>
+          <FormField label="Nome" error={errors.name}>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Seu nome completo"
+              icon="/img/user-icon.svg"
+              value={formData.name}
+              onChange={handleChange}
+              disabled={isLoading}
+            />
+          </FormField>
 
-          <div className={styles.inputGroup}>
-            <label htmlFor="email" className={styles.label}>
-              Email
-            </label>
-            <div className={styles.inputIconWrapper}>
-              <Image
-                src="/img/mail-icon.svg"
-                alt="Mail"
-                width={16}
-                height={16}
-                className={styles.icon}
-              />
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu.email@exemplo.com"
-                className={styles.input}
-                value={formData.email}
-                onChange={handleChange}
-                disabled={isLoading}
-              />
-            </div>
-            {errors.email && (
-              <span className={styles.error}>{errors.email}</span>
-            )}
-          </div>
+          <FormField label="Email" error={errors.email}>
+            <Input
+              id="email"
+              type="email"
+              placeholder="seu.email@exemplo.com"
+              icon="/img/mail-icon.svg"
+              value={formData.email}
+              onChange={handleChange}
+              disabled={isLoading}
+            />
+          </FormField>
 
-          <div className={styles.inputGroup}>
-            <label htmlFor="password" className={styles.label}>
-              Senha
-            </label>
-            <div className={styles.inputIconWrapper}>
-              <Image
-                src="/img/lock-icon.svg"
-                alt="Lock"
-                width={16}
-                height={16}
-                className={styles.icon}
-              />
-              <Input
-                id="password"
-                type="password"
-                placeholder="********"
-                className={styles.input}
-                value={formData.password}
-                onChange={handleChange}
-                disabled={isLoading}
-              />
-            </div>
-            {errors.password && (
-              <span className={styles.error}>{errors.password}</span>
-            )}
-          </div>
+          <FormField label="Senha" error={errors.password}>
+            <Input
+              id="password"
+              type="password"
+              placeholder="********"
+              icon="/img/lock-icon.svg"
+              value={formData.password}
+              onChange={handleChange}
+              disabled={isLoading}
+            />
+          </FormField>
 
-          <div className={styles.inputGroup}>
-            <label htmlFor="confirmPassword" className={styles.label}>
-              Confirmar Senha
-            </label>
-            <div className={styles.inputIconWrapper}>
-              <Image
-                src="/img/lock-icon.svg"
-                alt="Lock"
-                width={16}
-                height={16}
-                className={styles.icon}
-              />
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="********"
-                className={styles.input}
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                disabled={isLoading}
-              />
-            </div>
-            {errors.confirmPassword && (
-              <span className={styles.error}>{errors.confirmPassword}</span>
-            )}
-          </div>
+          <FormField label="Confirmar Senha" error={errors.confirmPassword}>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="********"
+              icon="/img/lock-icon.svg"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              disabled={isLoading}
+            />
+          </FormField>
 
-          <Button type="submit" className={styles.button} disabled={isLoading}>
+          <Button
+            type="submit"
+            variant="primary"
+            className={styles.button}
+            disabled={isLoading}
+          >
             {isLoading ? 'Criando conta...' : 'Concluir Cadastro'}
           </Button>
         </form>

@@ -1,0 +1,35 @@
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 13px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.67;
+  white-space: nowrap;
+}
+
+.success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.warning {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.danger {
+  background: #ffe4e6;
+  color: #9f1239;
+}
+
+.info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.default {
+  background: #f3f4f6;
+  color: #565d6d;
+}

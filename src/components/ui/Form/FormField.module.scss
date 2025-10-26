@@ -1,0 +1,29 @@
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.formLabel {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.43;
+  color: #171a1f;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.required {
+  color: #e45b63;
+}
+
+.error {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 12px;
+  color: #e45b63;
+  margin-top: -4px;
+}
