@@ -1,159 +1,27 @@
 'use client'
-import React, { useState } from 'react'
+import React from 'react'
 
-import { useRouter } from 'next/navigation'
-
-import { CreateShelterData } from '@/@types/shelterProps'
 import { Button } from '@/components/ui/button'
 import { FormField, FormRow, FormRoot } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import { sheltersService } from '@/services'
 
+import { CALAMITIES, BRAZILIAN_STATES } from './constants/shelter-form'
+import { useNewShelter } from './hooks/useNewShelter'
 import styles from './NewShelter.module.scss'
 
-const calamities = [
-  'Inundação',
-  'Deslizamento de Terra',
-  'Incêndio Florestal',
-  'Vendaval',
-  'Terremoto',
-  'Tempestade Tropical',
-  'Gelo e Neve',
-  'Seca Severa',
-  'Ciclone',
-]
-
-const brazilianStates = [
-  { value: 'AC', label: 'Acre' },
-  { value: 'AL', label: 'Alagoas' },
-  { value: 'AP', label: 'Amapá' },
-  { value: 'AM', label: 'Amazonas' },
-  { value: 'BA', label: 'Bahia' },
-  { value: 'CE', label: 'Ceará' },
-  { value: 'DF', label: 'Distrito Federal' },
-  { value: 'ES', label: 'Espírito Santo' },
-  { value: 'GO', label: 'Goiás' },
-  { value: 'MA', label: 'Maranhão' },
-  { value: 'MT', label: 'Mato Grosso' },
-  { value: 'MS', label: 'Mato Grosso do Sul' },
-  { value: 'MG', label: 'Minas Gerais' },
-  { value: 'PA', label: 'Pará' },
-  { value: 'PB', label: 'Paraíba' },
-  { value: 'PR', label: 'Paraná' },
-  { value: 'PE', label: 'Pernambuco' },
-  { value: 'PI', label: 'Piauí' },
-  { value: 'RJ', label: 'Rio de Janeiro' },
-  { value: 'RN', label: 'Rio Grande do Norte' },
-  { value: 'RS', label: 'Rio Grande do Sul' },
-  { value: 'RO', label: 'Rondônia' },
-  { value: 'RR', label: 'Roraima' },
-  { value: 'SC', label: 'Santa Catarina' },
-  { value: 'SP', label: 'São Paulo' },
-  { value: 'SE', label: 'Sergipe' },
-  { value: 'TO', label: 'Tocantins' },
-]
-
 export default function NewShelter() {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const [formData, setFormData] = useState<CreateShelterData>({
-    name: '',
-    description: '',
-    calamity: '',
-    address: '',
-    city: '',
-    state: '',
-    cep: '',
-    active: true,
-  })
-
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) => {
-    const { id, value } = e.target
-
-    // Formata o CEP automaticamente
-    if (id === 'cep') {
-      const formatted = value
-        .replace(/\D/g, '') // Remove tudo que não é número
-        .replace(/(\d{5})(\d)/, '$1-$2') // Adiciona o hífen
-        .slice(0, 9) // Limita a 9 caracteres (00000-000)
-
-      setFormData((prev) => ({ ...prev, [id]: formatted }))
-      return
-    }
-
-    setFormData((prev) => ({ ...prev, [id]: value }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-
-    // Validações básicas
-    if (!formData.name.trim()) {
-      setError('Nome do abrigo é obrigatório')
-      return
-    }
-
-    if (!formData.calamity) {
-      setError('Selecione o tipo de calamidade')
-      return
-    }
-
-    if (!formData.address.trim()) {
-      setError('Endereço é obrigatório')
-      return
-    }
-
-    if (!formData.city.trim()) {
-      setError('Cidade é obrigatória')
-      return
-    }
-
-    if (!formData.state) {
-      setError('Selecione o estado')
-      return
-    }
-
-    if (!formData.cep.trim()) {
-      setError('CEP é obrigatório')
-      return
-    }
-
-    // Valida formato do CEP
-    const cepNumbers = formData.cep.replace(/\D/g, '')
-    if (cepNumbers.length !== 8) {
-      setError('CEP deve ter 8 dígitos')
-      return
-    }
-
-    try {
-      setLoading(true)
-      await sheltersService.create(formData)
-
-      // Redireciona para a listagem de abrigos após sucesso
-      router.push('/')
-    } catch (err: any) {
-      console.error('Erro ao criar abrigo:', err)
-      setError(
-        err?.response?.data?.message || 'Erro ao criar abrigo. Tente novamente.',
-      )
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleCancel = () => {
-    router.push('/')
-  }
+  const {
+    formData,
+    loading,
+    error,
+    handleInputChange,
+    handleSubmit,
+    handleCancel,
+    handleActiveChange,
+  } = useNewShelter()
 
   return (
     <main className={styles.main}>
@@ -198,7 +66,7 @@ export default function NewShelter() {
                 id="calamity"
                 value={formData.calamity}
                 onChange={handleInputChange}
-                options={calamities.map((c) => ({ value: c, label: c }))}
+                options={CALAMITIES.map((c) => ({ value: c, label: c }))}
                 placeholder="Selecione o tipo de calamidade"
                 disabled={loading}
               />
@@ -235,7 +103,7 @@ export default function NewShelter() {
                 id="state"
                 value={formData.state}
                 onChange={handleInputChange}
-                options={brazilianStates}
+                options={BRAZILIAN_STATES}
                 placeholder="Selecione o estado"
                 disabled={loading}
               />
@@ -257,9 +125,7 @@ export default function NewShelter() {
             <span className={styles.statusLabel}>Abrigo Ativo</span>
             <Switch
               checked={formData.active}
-              onCheckedChange={(checked) =>
-                setFormData((prev) => ({ ...prev, active: checked }))
-              }
+              onCheckedChange={handleActiveChange}
               disabled={loading}
             />
           </div>

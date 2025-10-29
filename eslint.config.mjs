@@ -49,6 +49,14 @@ const eslintConfig = [
       '@typescript-eslint/no-explicit-any': 'off',
       'react/display-name': 'off',
       'react/prop-types': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
 
       'import-helpers/order-imports': [
         'error',

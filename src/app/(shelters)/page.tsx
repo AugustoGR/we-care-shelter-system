@@ -1,50 +1,26 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 
 import Image from 'next/image'
 
-import { Shelter } from '@/@types/shelterProps'
 import { Header } from '@/components/layout/Header/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { LinkButton } from '@/components/ui/link-button'
-import { sheltersService } from '@/services'
 import { getShelterStatusConfig } from '@/utils/formatters'
 
+import { useShelters } from './hooks/useShelters'
 import styles from './Shelters.module.scss'
 
 export default function Shelters() {
-  const [shelters, setShelters] = useState<Shelter[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    loadShelters()
-  }, [])
-
-  async function loadShelters() {
-    try {
-      setLoading(true)
-      setError(null)
-      const data = await sheltersService.findMyOwnedShelters()
-      setShelters(data)
-    } catch (err: any) {
-      console.error('Erro ao carregar abrigos:', err)
-      setError(err?.response?.data?.message || 'Erro ao carregar abrigos')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filteredShelters = shelters.filter((shelter) => {
-    const searchLower = searchTerm.toLowerCase()
-    return (
-      shelter.name.toLowerCase().includes(searchLower) ||
-      shelter.calamity.toLowerCase().includes(searchLower) ||
-      shelter.city.toLowerCase().includes(searchLower)
-    )
-  })
+  const {
+    loading,
+    searchTerm,
+    setSearchTerm,
+    error,
+    filteredShelters,
+    loadShelters,
+  } = useShelters()
 
   return (
     <>

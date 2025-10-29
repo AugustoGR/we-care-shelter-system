@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 
 import Image from 'next/image'
 import Link from 'next/link'
@@ -8,75 +8,13 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { FormField, FormRoot } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
-import { useAuth } from '@/contexts/AuthContext'
 
+import { useLogin } from './hooks/useLogin'
 import styles from './Login.module.scss'
 
 export default function Login() {
-  const { login } = useAuth()
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isLoading, setIsLoading] = useState(false)
-  const [apiError, setApiError] = useState('')
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    // Validar email
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email é obrigatório'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email inválido'
-    }
-
-    // Validar senha
-    if (!formData.password) {
-      newErrors.password = 'Senha é obrigatória'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setApiError('')
-
-    if (!validateForm()) {
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      await login({
-        email: formData.email,
-        password: formData.password,
-      })
-    } catch (error: any) {
-      const message =
-        error.response?.data?.message ||
-        'Erro ao fazer login. Verifique suas credenciais.'
-      setApiError(message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target
-    setFormData((prev) => ({ ...prev, [id]: value }))
-    // Limpar erro do campo quando o usuário começar a digitar
-    if (errors[id]) {
-      setErrors((prev) => ({ ...prev, [id]: '' }))
-    }
-    if (apiError) {
-      setApiError('')
-    }
-  }
+  const { formData, errors, isLoading, apiError, handleSubmit, handleChange } =
+    useLogin()
 
   return (
     <main className={styles.main}>
