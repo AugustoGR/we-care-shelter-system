@@ -2,12 +2,18 @@
 import React, { useState } from 'react'
 
 import { FilterBar } from '@/components/layout/FilterBar'
-import { ModalRoot, ModalHeader, ModalContent, ModalActions } from '@/components/layout/Modal'
+import {
+  ModalRoot,
+  ModalHeader,
+  ModalContent,
+  ModalActions,
+} from '@/components/layout/Modal'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { TableCard } from '@/components/layout/TableCard'
 import { Button } from '@/components/ui/button'
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal'
 import { DataTable, Column } from '@/components/ui/DataTable'
-import { FormField, FormRow } from '@/components/ui/Form'
+import { FormRoot, FormField, FormRow } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -86,6 +92,11 @@ export default function VolunteersPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [volunteerToDelete, setVolunteerToDelete] = useState<Volunteer | null>(
+    null,
+  )
+  const [isDeleting, setIsDeleting] = useState(false)
   const [form, setForm] = useState(initialForm)
 
   const filtered = VOLUNTEERS.filter((v) => {
@@ -107,6 +118,29 @@ export default function VolunteersPage() {
     console.log('Form submitted:', form)
     setModalOpen(false)
     setForm(initialForm)
+  }
+
+  const handleDeleteClick = (volunteer: Volunteer) => {
+    setVolunteerToDelete(volunteer)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!volunteerToDelete) return
+
+    setIsDeleting(true)
+    try {
+      // Simula chamada à API
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log('Deleted:', volunteerToDelete)
+      // Aqui você chamaria a API real para deletar
+    } catch (error) {
+      console.error('Error deleting volunteer:', error)
+    } finally {
+      setIsDeleting(false)
+      setDeleteModalOpen(false)
+      setVolunteerToDelete(null)
+    }
   }
 
   const columns: Column<Volunteer>[] = [
@@ -188,10 +222,27 @@ export default function VolunteersPage() {
           data={filtered}
           columns={columns}
           onEdit={(row) => console.log('Edit', row)}
-          onDelete={(row) => console.log('Delete', row)}
+          onDelete={handleDeleteClick}
           emptyMessage="Nenhum voluntário encontrado."
         />
       </TableCard>
+
+      {/* Modal de confirmação de deleção */}
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setVolunteerToDelete(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmar Exclusão"
+        message={`Tem certeza que deseja excluir o voluntário ${volunteerToDelete?.name}?`}
+        confirmText="Excluir"
+        confirmButtonStyle={{ backgroundColor: '#E45B63' }}
+        isLoading={isDeleting}
+        loadingText="Excluindo..."
+        showUndoWarning={true}
+      />
 
       {/* Modal de cadastro */}
       {modalOpen && (
@@ -201,7 +252,7 @@ export default function VolunteersPage() {
             onClose={() => setModalOpen(false)}
           />
           <ModalContent>
-            <form className={styles.modalForm} onSubmit={handleSubmit}>
+            <FormRoot onSubmit={handleSubmit}>
               <FormRow columns={1}>
                 <FormField label="Nome Completo" htmlFor="name" required>
                   <Input
@@ -279,7 +330,7 @@ export default function VolunteersPage() {
                   Cadastrar Voluntário
                 </Button>
               </ModalActions>
-            </form>
+            </FormRoot>
           </ModalContent>
         </ModalRoot>
       )}

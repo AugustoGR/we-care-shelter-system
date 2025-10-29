@@ -2,17 +2,21 @@
 import React, { useState } from 'react'
 
 import { FilterBar } from '@/components/layout/FilterBar'
-import { ModalRoot, ModalHeader, ModalContent, ModalActions } from '@/components/layout/Modal'
+import {
+  ModalRoot,
+  ModalHeader,
+  ModalContent,
+  ModalActions,
+} from '@/components/layout/Modal'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { TableCard } from '@/components/layout/TableCard'
 import { Button } from '@/components/ui/button'
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal'
 import { DataTable, Column } from '@/components/ui/DataTable'
-import { FormField, FormRow } from '@/components/ui/Form'
+import { FormField, FormRow, FormRoot } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/StatusBadge'
-
-import styles from './Resources.module.scss'
 
 interface Resource {
   nome: string
@@ -130,6 +134,11 @@ export default function Resources() {
   const [search, setSearch] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [resourceToDelete, setResourceToDelete] = useState<Resource | null>(
+    null,
+  )
+  const [isDeleting, setIsDeleting] = useState(false)
   const [form, setForm] = useState(initialForm)
 
   const filteredResources = resources.filter((item) => {
@@ -151,6 +160,27 @@ export default function Resources() {
     console.log('Form submitted:', form)
     setModalOpen(false)
     setForm(initialForm)
+  }
+
+  const handleDeleteClick = (resource: Resource) => {
+    setResourceToDelete(resource)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!resourceToDelete) return
+
+    setIsDeleting(true)
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log('Deleted:', resourceToDelete)
+    } catch (error) {
+      console.error('Error deleting resource:', error)
+    } finally {
+      setIsDeleting(false)
+      setDeleteModalOpen(false)
+      setResourceToDelete(null)
+    }
   }
 
   const columns: Column<Resource>[] = [
@@ -223,10 +253,27 @@ export default function Resources() {
           data={filteredResources}
           columns={columns}
           onEdit={(row) => console.log('Edit', row)}
-          onDelete={(row) => console.log('Delete', row)}
+          onDelete={handleDeleteClick}
           emptyMessage="Nenhum recurso encontrado."
         />
       </TableCard>
+
+      {/* Modal de confirmação de deleção */}
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setResourceToDelete(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmar Exclusão"
+        message={`Tem certeza que deseja excluir o recurso ${resourceToDelete?.nome}?`}
+        confirmText="Excluir"
+        confirmButtonStyle={{ backgroundColor: '#E45B63' }}
+        isLoading={isDeleting}
+        loadingText="Excluindo..."
+        showUndoWarning={true}
+      />
 
       {/* Modal de cadastro */}
       {modalOpen && (
@@ -236,7 +283,7 @@ export default function Resources() {
             onClose={() => setModalOpen(false)}
           />
           <ModalContent>
-            <form className={styles.modalForm} onSubmit={handleSubmit}>
+            <FormRoot onSubmit={handleSubmit}>
               <FormRow columns={1}>
                 <FormField label="Nome do Recurso" htmlFor="nome" required>
                   <Input
@@ -334,7 +381,7 @@ export default function Resources() {
                   Cadastrar Recurso
                 </Button>
               </ModalActions>
-            </form>
+            </FormRoot>
           </ModalContent>
         </ModalRoot>
       )}

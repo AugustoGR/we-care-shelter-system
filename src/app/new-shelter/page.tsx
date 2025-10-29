@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 
 import { CreateShelterData } from '@/@types/shelterProps'
 import { Button } from '@/components/ui/button'
-import { FormField, FormRow } from '@/components/ui/Form'
+import { FormField, FormRow, FormRoot } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
@@ -165,7 +165,7 @@ export default function NewShelter() {
 
         {error && <div className={styles.errorMessage}>{error}</div>}
 
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <FormRoot className={styles.form} onSubmit={handleSubmit}>
           <FormRow columns={1}>
             <FormField label="Nome do Abrigo" htmlFor="name" required>
               <Input
@@ -281,7 +281,7 @@ export default function NewShelter() {
               {loading ? 'Salvando...' : 'Salvar Abrigo'}
             </Button>
           </div>
-        </form>
+        </FormRoot>
       </div>
     </main>
   )

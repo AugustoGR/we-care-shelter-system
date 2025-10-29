@@ -6,7 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
-import { FormField } from '@/components/ui/Form'
+import { FormField, FormRoot } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -95,7 +95,7 @@ export default function Login() {
 
           {apiError && <div className={styles.errorMessage}>{apiError}</div>}
 
-          <form className={styles.form} onSubmit={handleSubmit}>
+          <FormRoot className={styles.form} onSubmit={handleSubmit}>
             <FormField label="Email" error={errors.email}>
               <Input
                 id="email"
@@ -126,7 +126,7 @@ export default function Login() {
             >
               {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
-          </form>
+          </FormRoot>
           <div className={styles.signupRow}>
             <span className={styles.signupText}>Não tem uma conta? </span>
             <Link href="/logon" className={styles.signupButton}>

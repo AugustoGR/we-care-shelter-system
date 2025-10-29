@@ -41,61 +41,13 @@
 	}
 }
 
-.addButton {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	background: #0079BF;
-	color: #fff;
-	border-radius: 6px;
-	font-size: 14px;
-	line-height: 1.5714285714285714em;
-	font-family: 'Open Sans', sans-serif;
-	height: 40px;
-	padding: 0 20px;
-	border: none;
-
-	&:hover {
-		background: #006ba6;
-	}
-
-	@media (max-width: 480px) {
-		width: 100%;
-		justify-content: center;
-	}
-}
-
 .searchBar {
-	display: flex;
-	align-items: center;
-	background: #fff;
-	border: 1px solid #DEE1E6;
-	border-radius: 6px;
-	height: 39px;
-	padding: 0 16px;
 	margin-bottom: 32px;
 	max-width: 511px;
 
 	@media (max-width: 768px) {
 		max-width: 100%;
 		margin-bottom: 24px;
-	}
-}
-
-.searchInput {
-	border: none;
-	outline: none;
-	font-size: 14px;
-	line-height: 1.5714285714285714em;
-	color: #565D6D;
-	font-family: 'Open Sans', sans-serif;
-	margin-left: 10px;
-	width: 100%;
-	background: transparent;
-
-	&::placeholder {
-		color: #565D6D;
-		font-family: 'Open Sans', sans-serif;
 	}
 }
 
@@ -123,7 +75,6 @@
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-	height: 204px;
 }
 
 .cardTitle {
@@ -168,27 +119,6 @@
 	font-weight: 600;
 	border: 1px solid;
 	border-radius: 13px;
-}
-
-.detailsButton {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-	align-self: flex-end;
-	margin-top: auto;
-	color: #0079BF;
-	font-size: 14px;
-	line-height: 100%;
-	font-family: 'Open Sans', sans-serif;
-	background: transparent;
-	border: 1px solid #DEE1E6;
-	border-radius: 6px;
-	height: 40px;
-	padding: 0 16.8px;
-
-	&:hover {
-		background: rgba(0, 121, 191, 0.05);
-	}
 }
 
 .loadingMessage,

@@ -2,17 +2,21 @@
 import React, { useState } from 'react'
 
 import { FilterBar } from '@/components/layout/FilterBar'
-import { ModalContent, ModalHeader, ModalRoot, ModalActions } from '@/components/layout/Modal'
+import {
+  ModalContent,
+  ModalHeader,
+  ModalRoot,
+  ModalActions,
+} from '@/components/layout/Modal'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { TableCard } from '@/components/layout/TableCard'
 import { Button } from '@/components/ui/button'
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal'
 import { DataTable, Column } from '@/components/ui/DataTable'
-import { FormField, FormRow } from '@/components/ui/Form'
+import { FormField, FormRow, FormRoot } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/StatusBadge'
-
-import styles from './Sheltered.module.scss'
 
 // eslint-disable-next-line no-unused-vars
 interface Sheltered {
@@ -33,6 +37,11 @@ const initialForm = {
 
 export default function Sheltered() {
   const [modalOpen, setModalOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [shelteredToDelete, setShelteredToDelete] = useState<Sheltered | null>(
+    null,
+  )
+  const [isDeleting, setIsDeleting] = useState(false)
   const [form, setForm] = useState(initialForm)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -128,6 +137,30 @@ export default function Sheltered() {
     setModalOpen(false)
   }
 
+  const handleDeleteClick = (person: Sheltered) => {
+    setShelteredToDelete(person)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!shelteredToDelete) return
+
+    setIsDeleting(true)
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log('Deleted:', shelteredToDelete)
+      setSheltered(
+        sheltered.filter((s) => s.cpf !== shelteredToDelete.cpf),
+      )
+    } catch (error) {
+      console.error('Error deleting sheltered:', error)
+    } finally {
+      setIsDeleting(false)
+      setDeleteModalOpen(false)
+      setShelteredToDelete(null)
+    }
+  }
+
   const columns: Column<Sheltered>[] = [
     {
       header: 'Nome',
@@ -219,7 +252,7 @@ export default function Sheltered() {
           data={paginatedData}
           columns={columns}
           onEdit={(row) => console.log('Edit', row)}
-          onDelete={(row) => console.log('Delete', row)}
+          onDelete={handleDeleteClick}
           emptyMessage="Nenhum abrigado encontrado."
           pagination={{
             currentPage,
@@ -231,6 +264,23 @@ export default function Sheltered() {
         />
       </TableCard>
 
+      {/* Modal de confirmação de deleção */}
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setShelteredToDelete(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmar Exclusão"
+        message={`Tem certeza que deseja excluir o abrigado ${shelteredToDelete?.nome}?`}
+        confirmText="Excluir"
+        confirmButtonStyle={{ backgroundColor: '#E45B63' }}
+        isLoading={isDeleting}
+        loadingText="Excluindo..."
+        showUndoWarning={true}
+      />
+
       {/* Modal de cadastro */}
       {modalOpen && (
         <ModalRoot onClose={() => setModalOpen(false)}>
@@ -239,7 +289,7 @@ export default function Sheltered() {
             onClose={() => setModalOpen(false)}
           />
           <ModalContent>
-            <form className={styles.modalForm} onSubmit={handleSubmit}>
+            <FormRoot onSubmit={handleSubmit}>
               <FormRow columns={1}>
                 <FormField label="Nome Completo" htmlFor="nome" required>
                   <Input
@@ -322,7 +372,7 @@ export default function Sheltered() {
                   Cadastrar Abrigado
                 </Button>
               </ModalActions>
-            </form>
+            </FormRoot>
           </ModalContent>
         </ModalRoot>
       )}

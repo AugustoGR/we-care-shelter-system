@@ -1,5 +1,5 @@
 
-@import '@/styles/variables.scss';
+@use '@/styles/variables.scss' as *;
 
 .main {
 	min-height: 100vh;
@@ -77,9 +77,6 @@
 }
 
 .form {
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
 	width: 100%;
 	max-width: 320px;
 	margin: 0 auto;

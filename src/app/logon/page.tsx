@@ -5,7 +5,7 @@ import React, { useState } from 'react'
 import Image from 'next/image'
 
 import { Button } from '@/components/ui/button'
-import { FormField } from '@/components/ui/Form'
+import { FormField, FormRoot } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -112,7 +112,7 @@ export default function Logon() {
 
         {apiError && <div className={styles.errorMessage}>{apiError}</div>}
 
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <FormRoot className={styles.form} onSubmit={handleSubmit}>
           <FormField label="Nome" error={errors.name}>
             <Input
               id="name"
@@ -169,7 +169,7 @@ export default function Logon() {
           >
             {isLoading ? 'Criando conta...' : 'Concluir Cadastro'}
           </Button>
-        </form>
+        </FormRoot>
       </div>
     </main>
   )

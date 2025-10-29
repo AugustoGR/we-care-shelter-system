@@ -2,14 +2,20 @@
 import React, { useState } from 'react'
 
 import { FilterBar } from '@/components/layout/FilterBar'
-import { ModalRoot, ModalHeader, ModalContent, ModalActions } from '@/components/layout/Modal'
+import {
+  ModalRoot,
+  ModalHeader,
+  ModalContent,
+  ModalActions,
+} from '@/components/layout/Modal'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { TableCard } from '@/components/layout/TableCard'
 import { Button } from '@/components/ui/button'
 import { CheckboxGroup } from '@/components/ui/CheckboxGroup'
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal'
 import { DataTable, Column } from '@/components/ui/DataTable'
 import { FileUpload } from '@/components/ui/FileUpload'
-import { FormField, FormRow } from '@/components/ui/Form'
+import { FormField, FormRow, FormRoot } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -93,6 +99,9 @@ const ANIMALS: Animal[] = [
 
 export default function ShelteredAnimalsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [animalToDelete, setAnimalToDelete] = useState<Animal | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [form, setForm] = useState({
     name: '',
     species: '',
@@ -143,6 +152,27 @@ export default function ShelteredAnimalsPage() {
       felina: false,
       photo: null,
     })
+  }
+
+  const handleDeleteClick = (animal: Animal) => {
+    setAnimalToDelete(animal)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!animalToDelete) return
+
+    setIsDeleting(true)
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log('Deleted:', animalToDelete)
+    } catch (error) {
+      console.error('Error deleting animal:', error)
+    } finally {
+      setIsDeleting(false)
+      setDeleteModalOpen(false)
+      setAnimalToDelete(null)
+    }
   }
 
   const columns: Column<Animal>[] = [
@@ -220,10 +250,27 @@ export default function ShelteredAnimalsPage() {
           data={filtered}
           columns={columns}
           onEdit={(row) => console.log('Edit', row)}
-          onDelete={(row) => console.log('Delete', row)}
+          onDelete={handleDeleteClick}
           emptyMessage="Nenhum animal encontrado."
         />
       </TableCard>
+
+      {/* Modal de confirmação de deleção */}
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setAnimalToDelete(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmar Exclusão"
+        message={`Tem certeza que deseja excluir o animal ${animalToDelete?.name}?`}
+        confirmText="Excluir"
+        confirmButtonStyle={{ backgroundColor: '#E45B63' }}
+        isLoading={isDeleting}
+        loadingText="Excluindo..."
+        showUndoWarning={true}
+      />
 
       {/* Modal de cadastro */}
       {isModalOpen && (
@@ -233,7 +280,7 @@ export default function ShelteredAnimalsPage() {
             onClose={() => setIsModalOpen(false)}
           />
           <ModalContent>
-            <form onSubmit={handleSubmit} className={styles.modalForm}>
+            <FormRoot onSubmit={handleSubmit}>
               <p className={styles.formDesc}>
                 Preencha os detalhes para adicionar um animal ao abrigo.
               </p>
@@ -389,7 +436,7 @@ export default function ShelteredAnimalsPage() {
               Salvar Animal
                 </Button>
               </ModalActions>
-            </form>
+            </FormRoot>
           </ModalContent>
         </ModalRoot>
       )}

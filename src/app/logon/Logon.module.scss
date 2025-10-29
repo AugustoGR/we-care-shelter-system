@@ -63,9 +63,6 @@
 .form {
 	width: 100%;
 	max-width: 336px;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
 
 	@media (max-width: 540px) {
 		max-width: 100%;

@@ -15,7 +15,8 @@
 }
 
 .formContainer {
-	width: 672px;
+	max-width: 672px;
+	width: 100%;
 	margin: 64px auto 0 auto;
 	background: #fff;
 	border-radius: 10px;
@@ -53,12 +54,6 @@
 	flex-direction: column;
 	align-items: center;
 	gap: 16px;
-}
-
-.form {
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
 }
 
 .statusRow {

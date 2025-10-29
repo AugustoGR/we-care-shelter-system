@@ -2,10 +2,12 @@
 import React, { useEffect, useState } from 'react'
 
 import Image from 'next/image'
-import Link from 'next/link'
 
 import { Shelter } from '@/@types/shelterProps'
 import { Header } from '@/components/layout/Header/Header'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { LinkButton } from '@/components/ui/link-button'
 import { sheltersService } from '@/services'
 import { getShelterStatusConfig } from '@/utils/formatters'
 
@@ -50,25 +52,25 @@ export default function Shelters() {
       <main className={styles.main}>
         <div className={styles.headerRow}>
           <h1 className={styles.title}>Meus Abrigos</h1>
-          <Link href="/new-shelter" className={styles.addButton}>
-            <Image
-              src="/img/circle-plus-icon.svg"
-              alt="Adicionar"
-              width={16}
-              height={16}
-            />
+          <LinkButton
+            href="/new-shelter"
+            variant="default"
+            icon={
+              <Image
+                src="/img/circle-plus-icon.svg"
+                alt="Adicionar"
+                width={16}
+                height={16}
+              />
+            }
+            iconPosition="left"
+          >
             Adicionar Novo Abrigo
-          </Link>
+          </LinkButton>
         </div>
         <div className={styles.searchBar}>
-          <Image
-            src="/img/search-icon.svg"
-            alt="Buscar"
-            width={20}
-            height={20}
-          />
-          <input
-            className={styles.searchInput}
+          <Input
+            icon="/img/search-icon.svg"
             placeholder="Pesquisar abrigos por nome, tipo ou status..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -80,9 +82,9 @@ export default function Shelters() {
         ) : error ? (
           <div className={styles.errorMessage}>
             {error}
-            <button onClick={loadShelters} className={styles.retryButton}>
+            <Button onClick={loadShelters} variant="primary">
               Tentar novamente
-            </button>
+            </Button>
           </div>
         ) : filteredShelters.length === 0 ? (
           <div className={styles.emptyMessage}>
@@ -114,12 +116,13 @@ export default function Shelters() {
                       {status}
                     </span>
                   </div>
-                  <Link
+                  <LinkButton
+                    className='ml-auto'
                     href={`/dashboard/${shelter.id}/modules`}
-                    className={styles.detailsButton}
+                    variant="outline"
                   >
                     Acessar
-                  </Link>
+                  </LinkButton>
                 </div>
               )
             })}
