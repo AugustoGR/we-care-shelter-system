@@ -6,10 +6,15 @@ import {
   ModalContent,
   ModalActions,
 } from '@/components/layout/Modal'
+import {
+  Autocomplete,
+  AutocompleteOption,
+} from '@/components/ui/Autocomplete'
 import { Button } from '@/components/ui/button'
 import { FormField, FormRow, FormRoot } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import { api } from '@/services'
 
 import { STATUS_OPTIONS } from '../constants/volunteers'
 
@@ -17,16 +22,22 @@ interface ModalFormProps {
   isOpen: boolean
   onClose: () => void
   form: {
-    name: string
+    userId: string
     phone: string
-    email: string
     skills: string
     status: string
   }
   onInputChange: (
     _event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => void
+  onUserSelect: (_userId: string, _userName: string, _userEmail: string) => void
   onSubmit: (_event: React.FormEvent) => void
+}
+
+interface User {
+  id: string
+  name: string
+  email: string
 }
 
 export function ModalForm({
@@ -34,8 +45,33 @@ export function ModalForm({
   onClose,
   form,
   onInputChange,
+  onUserSelect,
   onSubmit,
 }: ModalFormProps) {
+  const searchUsers = async (query: string): Promise<AutocompleteOption[]> => {
+    try {
+      const response = await api.get<User[]>('/users/search', {
+        params: { email: query },
+      })
+      return response.data.map((user) => ({
+        id: user.id,
+        label: user.name,
+        email: user.email,
+      }))
+    } catch (error) {
+      console.error('Error searching users:', error)
+      return []
+    }
+  }
+
+  const handleUserSelect = (userId: string, option?: AutocompleteOption) => {
+    if (option) {
+      onUserSelect(userId, option.label, option.email || '')
+    } else {
+      onUserSelect('', '', '')
+    }
+  }
+
   if (!isOpen) return null
 
   return (
@@ -44,13 +80,18 @@ export function ModalForm({
       <ModalContent>
         <FormRoot onSubmit={onSubmit}>
           <FormRow columns={1}>
-            <FormField label="Nome Completo" htmlFor="name" required>
-              <Input
-                id="name"
-                name="name"
-                placeholder="Digite o nome completo"
-                value={form.name}
-                onChange={onInputChange}
+            <FormField
+              label="E-mail do Usuário"
+              htmlFor="userEmail"
+              required
+            >
+              <Autocomplete
+                id="userEmail"
+                name="userEmail"
+                onChange={handleUserSelect}
+                onSearch={searchUsers}
+                placeholder="Digite o email do usuário (mínimo 3 caracteres)..."
+                minChars={3}
                 required
               />
             </FormField>
@@ -68,30 +109,6 @@ export function ModalForm({
               />
             </FormField>
 
-            <FormField label="E-mail" htmlFor="email" required>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="email@exemplo.com"
-                value={form.email}
-                onChange={onInputChange}
-                required
-              />
-            </FormField>
-          </FormRow>
-
-          <FormRow>
-            <FormField label="Habilidades" htmlFor="skills">
-              <Input
-                id="skills"
-                name="skills"
-                placeholder="Ex: Enfermagem, Culinária"
-                value={form.skills}
-                onChange={onInputChange}
-              />
-            </FormField>
-
             <FormField label="Status" htmlFor="status" required>
               <Select
                 id="status"
@@ -104,11 +121,23 @@ export function ModalForm({
             </FormField>
           </FormRow>
 
+          <FormRow columns={1}>
+            <FormField label="Habilidades" htmlFor="skills">
+              <Input
+                id="skills"
+                name="skills"
+                placeholder="Ex: Enfermagem, Culinária"
+                value={form.skills}
+                onChange={onInputChange}
+              />
+            </FormField>
+          </FormRow>
+
           <ModalActions>
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit" variant="primary">
+            <Button type="submit" variant="primary" disabled={!form.userId}>
               Cadastrar Voluntário
             </Button>
           </ModalActions>

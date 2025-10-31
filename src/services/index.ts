@@ -6,3 +6,4 @@ export type {
   AuthResponse,
 } from './http/auth.service'
 export { sheltersService } from './http/shelters.service'
+export { volunteersService } from './http/volunteers.service'

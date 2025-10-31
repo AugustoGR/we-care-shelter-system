@@ -1,6 +1,7 @@
 'use client'
 import React from 'react'
 
+import { VolunteerProps } from '@/@types/volunteerProps'
 import { FilterBar } from '@/components/layout/FilterBar'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { TableCard } from '@/components/layout/TableCard'
@@ -8,9 +9,10 @@ import { ConfirmationModal } from '@/components/ui/ConfirmationModal'
 import { DataTable, Column } from '@/components/ui/DataTable'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { formatDistanceToNow } from '@/utils/formatters'
 
 import { ModalForm } from './components/ModalForm'
-import { type Volunteer, STATUS_OPTIONS, COLUMNS } from './constants/volunteers'
+import { STATUS_OPTIONS, COLUMNS } from './constants/volunteers'
 import { useVolunteers } from './hooks/useVolunteers'
 import styles from './Volunteers.module.scss'
 
@@ -29,7 +31,9 @@ export default function VolunteersPage() {
     isDeleting,
     form,
     filtered,
+    loading,
     handleInputChange,
+    handleUserSelect,
     handleSubmit,
     handleDeleteClick,
     handleDeleteConfirm,
@@ -37,11 +41,11 @@ export default function VolunteersPage() {
   } = useVolunteers()
 
   // Adicionar renderização JSX para as colunas especiais
-  const columns: Column<Volunteer>[] = COLUMNS.map((col) => {
+  const columns: Column<VolunteerProps>[] = COLUMNS.map((col) => {
     if (col.header === 'Habilidades') {
       return {
         ...col,
-        accessor: (row: Volunteer) => (
+        accessor: (row: VolunteerProps) => (
           <div className={styles.skillsCell}>
             {row.skills.map((skill, idx) => (
               <span key={idx} className={styles.skillTag}>
@@ -55,11 +59,28 @@ export default function VolunteersPage() {
     if (col.header === 'Status') {
       return {
         ...col,
-        accessor: (row: Volunteer) => <StatusBadge status={row.status} />,
+        accessor: (row: VolunteerProps) => <StatusBadge status={row.status} />,
+      }
+    }
+    if (col.header === 'Última Atividade') {
+      return {
+        ...col,
+        accessor: (row: VolunteerProps) => formatDistanceToNow(row.lastActivity),
       }
     }
     return col
   })
+
+  if (loading) {
+    return (
+      <PageLayout
+        title="Gestão de Voluntários"
+        subtitle="Visualize e gerencie todos os voluntários cadastrados."
+      >
+        <div>Carregando...</div>
+      </PageLayout>
+    )
+  }
 
   return (
     <PageLayout
@@ -105,7 +126,7 @@ export default function VolunteersPage() {
         }}
         onConfirm={handleDeleteConfirm}
         title="Confirmar Exclusão"
-        message={`Tem certeza que deseja excluir o voluntário ${volunteerToDelete?.name}?`}
+        message={`Tem certeza que deseja excluir o voluntário ${volunteerToDelete?.user?.name}?`}
         confirmText="Excluir"
         confirmButtonStyle={{ backgroundColor: '#E45B63' }}
         isLoading={isDeleting}
@@ -118,6 +139,7 @@ export default function VolunteersPage() {
         onClose={() => setModalOpen(false)}
         form={form}
         onInputChange={handleInputChange}
+        onUserSelect={handleUserSelect}
         onSubmit={handleSubmit}
       />
     </PageLayout>

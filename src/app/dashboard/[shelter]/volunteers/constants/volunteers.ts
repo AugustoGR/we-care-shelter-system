@@ -1,13 +1,7 @@
+import { VolunteerProps } from '@/@types/volunteerProps'
 import { Column } from '@/components/ui/DataTable'
 
-export interface Volunteer {
-  name: string
-  phone: string
-  email: string
-  skills: string[]
-  status: string
-  lastActivity: string
-}
+export type Volunteer = Omit<VolunteerProps, 'id' | 'shelterId'>
 
 export const VOLUNTEERS: Volunteer[] = [
   {
@@ -61,9 +55,8 @@ export const VOLUNTEERS: Volunteer[] = [
 ]
 
 export const INITIAL_FORM = {
-  name: '',
+  userId: '',
   phone: '',
-  email: '',
   skills: '',
   status: 'Ativo',
 }
@@ -77,7 +70,7 @@ export const STATUS_OPTIONS = [
 export const COLUMNS: Column<Volunteer>[] = [
   {
     header: 'Nome',
-    accessor: 'name',
+    accessor: (row: Volunteer) => row.user.name,
     width: '200px',
   },
   {
@@ -87,7 +80,7 @@ export const COLUMNS: Column<Volunteer>[] = [
   },
   {
     header: 'Email',
-    accessor: 'email',
+    accessor: (row: Volunteer) => row.user.email,
     width: '220px',
   },
   {
