@@ -1,14 +1,15 @@
+import {
+  ShelteredPerson,
+  CreateShelteredPersonData,
+} from '@/@types/shelteredPersonProps'
 import { Column } from '@/components/ui/DataTable'
 
-export interface Sheltered {
-  nome: string
-  cpf: string
-  dataNascimento: string
-  genero: string
-  status: string
-}
+export type { ShelteredPerson, CreateShelteredPersonData }
 
-export const INITIAL_FORM: Sheltered = {
+export const INITIAL_FORM: Omit<
+  CreateShelteredPersonData,
+  'shelterId'
+> = {
   nome: '',
   cpf: '',
   dataNascimento: '',
@@ -28,44 +29,6 @@ export const GENERO_OPTIONS = [
   { value: 'Outro', label: 'Outro' },
 ]
 
-export const MOCK_SHELTERED: Sheltered[] = [
-  {
-    nome: 'João Silva',
-    cpf: '123.456.789-00',
-    dataNascimento: '1985-03-15',
-    genero: 'Masculino',
-    status: 'Ativo',
-  },
-  {
-    nome: 'Maria Santos',
-    cpf: '987.654.321-00',
-    dataNascimento: '1990-07-22',
-    genero: 'Feminino',
-    status: 'Ativo',
-  },
-  {
-    nome: 'Pedro Costa',
-    cpf: '456.789.123-00',
-    dataNascimento: '1978-11-30',
-    genero: 'Masculino',
-    status: 'Transferido',
-  },
-  {
-    nome: 'Ana Oliveira',
-    cpf: '321.654.987-00',
-    dataNascimento: '2000-05-10',
-    genero: 'Feminino',
-    status: 'Ativo',
-  },
-  {
-    nome: 'Carlos Mendes',
-    cpf: '789.123.456-00',
-    dataNascimento: '1995-09-18',
-    genero: 'Masculino',
-    status: 'Inativo',
-  },
-]
-
 export const IDADE_OPTIONS = [
   { value: '0-18', label: '0-18 anos' },
   { value: '19-30', label: '19-30 anos' },
@@ -75,7 +38,7 @@ export const IDADE_OPTIONS = [
 
 export const PAGE_SIZE = 10
 
-export const COLUMNS: Column<Sheltered>[] = [
+export const COLUMNS: Column<ShelteredPerson>[] = [
   {
     header: 'Nome',
     accessor: 'nome',

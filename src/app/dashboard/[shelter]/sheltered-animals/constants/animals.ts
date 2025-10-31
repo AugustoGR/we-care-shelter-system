@@ -1,58 +1,7 @@
+import { Animal } from '@/@types/animalProps'
 import { Column } from '@/components/ui/DataTable'
 
-export interface Animal {
-  name: string
-  species: string
-  breed: string
-  age: number
-  sex: string
-  health: string
-  status: string
-  photo: string
-}
-
-export const ANIMALS: Animal[] = [
-  {
-    name: 'Tobby',
-    species: 'Cachorro',
-    breed: 'Labrador',
-    age: 3,
-    sex: 'Macho',
-    health: 'Em Cuidado',
-    status: 'Em Cuidado',
-    photo: '',
-  },
-  {
-    name: 'Mia',
-    species: 'Gato',
-    breed: 'Siamês',
-    age: 1,
-    sex: 'Fêmea',
-    health: 'Aguardando Adoção',
-    status: 'Aguardando Adoção',
-    photo: '',
-  },
-  {
-    name: 'Rex',
-    species: 'Cachorro',
-    breed: 'Pastor Alemão',
-    age: 5,
-    sex: 'Macho',
-    health: 'Em Cuidado',
-    status: 'Em Cuidado',
-    photo: '',
-  },
-  {
-    name: 'Luna',
-    species: 'Gato',
-    breed: 'Persa',
-    age: 2,
-    sex: 'Fêmea',
-    health: 'Saudável',
-    status: 'Aguardando Adoção',
-    photo: '',
-  },
-]
+export type { Animal }
 
 export const INITIAL_FORM = {
   name: '',

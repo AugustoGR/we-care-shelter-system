@@ -1,18 +1,49 @@
-import React, { useState } from 'react'
+'use client'
 
-import { Resource, MOCK_RESOURCES, INITIAL_FORM } from '../constants/resources'
+import React, { useState, useEffect, useCallback } from 'react'
+
+import { useParams } from 'next/navigation'
+
+import { ResourceProps } from '@/@types'
+import { resourcesService } from '@/services'
+
+import { INITIAL_FORM } from '../constants/resources'
 
 export const useResources = () => {
-  const [resources] = useState<Resource[]>(MOCK_RESOURCES)
+  const params = useParams()
+  const shelterId = params?.shelter as string
+
+  const [resources, setResources] = useState<ResourceProps[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [resourceToDelete, setResourceToDelete] = useState<Resource | null>(
+  const [resourceToDelete, setResourceToDelete] = useState<ResourceProps | null>(
     null,
   )
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [form, setForm] = useState(INITIAL_FORM)
+
+  // Carregar recursos ao montar o componente
+  const loadResources = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const data = await resourcesService.findByShelterId(shelterId)
+      setResources(data)
+    } catch (error) {
+      console.error('Error loading resources:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [shelterId])
+
+  useEffect(() => {
+    if (shelterId) {
+      loadResources()
+    }
+  }, [shelterId, loadResources])
 
   const filteredResources = resources.filter((item) => {
     const matchNome = item.nome.toLowerCase().includes(search.toLowerCase())
@@ -28,14 +59,32 @@ export const useResources = () => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Form submitted:', form)
-    setModalOpen(false)
-    setForm(INITIAL_FORM)
+
+    if (isSubmitting) return
+
+    setIsSubmitting(true)
+    try {
+      const quantidade = parseInt(form.quantidade, 10)
+
+      await resourcesService.create({
+        ...form,
+        quantidade,
+        shelterId,
+      })
+
+      setModalOpen(false)
+      setForm(INITIAL_FORM)
+      await loadResources()
+    } catch (error) {
+      console.error('Error creating resource:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleDeleteClick = (resource: Resource) => {
+  const handleDeleteClick = (resource: ResourceProps) => {
     setResourceToDelete(resource)
     setDeleteModalOpen(true)
   }
@@ -45,8 +94,8 @@ export const useResources = () => {
 
     setIsDeleting(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log('Deleted:', resourceToDelete)
+      await resourcesService.remove(resourceToDelete.id)
+      await loadResources()
     } catch (error) {
       console.error('Error deleting resource:', error)
     } finally {
@@ -58,6 +107,7 @@ export const useResources = () => {
 
   return {
     resources,
+    isLoading,
     search,
     setSearch,
     categoriaFiltro,
@@ -69,6 +119,7 @@ export const useResources = () => {
     resourceToDelete,
     setResourceToDelete,
     isDeleting,
+    isSubmitting,
     form,
     setForm,
     filteredResources,

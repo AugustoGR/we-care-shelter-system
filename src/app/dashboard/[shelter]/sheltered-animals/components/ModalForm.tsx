@@ -42,6 +42,7 @@ interface ModalFormProps {
   onCheckboxChange: (_name: string, _checked: boolean) => void
   onFileChange: (_file: File | null) => void
   onSubmit: (_event: React.FormEvent) => void
+  isSaving?: boolean
 }
 
 export function ModalForm({
@@ -52,6 +53,7 @@ export function ModalForm({
   onCheckboxChange,
   onFileChange,
   onSubmit,
+  isSaving = false,
 }: ModalFormProps) {
   if (!isOpen) return null
 
@@ -119,6 +121,7 @@ export function ModalForm({
                 value={form.sex}
                 onChange={onInputChange}
                 options={SEX_OPTIONS}
+                placeholder="Selecione o sexo"
                 required
               />
             </FormField>
@@ -132,6 +135,7 @@ export function ModalForm({
                 value={form.health}
                 onChange={onInputChange}
                 options={HEALTH_OPTIONS}
+                placeholder="Selecione o estado de saúde"
                 required
               />
             </FormField>
@@ -188,11 +192,16 @@ export function ModalForm({
             onChange={onFileChange}
           />
           <ModalActions>
-            <Button type="button" variant="secondary" onClick={onClose}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              disabled={isSaving}
+            >
               Cancelar
             </Button>
-            <Button type="submit" variant="primary">
-              Salvar Animal
+            <Button type="submit" variant="primary" disabled={isSaving}>
+              {isSaving ? 'Salvando...' : 'Salvar Animal'}
             </Button>
           </ModalActions>
         </FormRoot>

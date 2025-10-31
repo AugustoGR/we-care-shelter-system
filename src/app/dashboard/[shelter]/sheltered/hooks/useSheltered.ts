@@ -1,132 +1,278 @@
-import React, { useState } from 'react'
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+
+import { useParams } from 'next/navigation'
 
 import {
-  Sheltered,
-  MOCK_SHELTERED,
+  ShelteredPerson,
+  CreateShelteredPersonData,
+  UpdateShelteredPersonData,
+} from '@/@types/shelteredPersonProps'
+import { shelteredPeopleService } from '@/services'
+
+import {
   INITIAL_FORM,
-  PAGE_SIZE,
+  STATUS_OPTIONS,
+  GENERO_OPTIONS,
+  IDADE_OPTIONS,
 } from '../constants/sheltered'
 
+type FormData = Omit<CreateShelteredPersonData, 'shelterId'>
+
 export const useSheltered = () => {
-  const [modalOpen, setModalOpen] = useState(false)
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [shelteredToDelete, setShelteredToDelete] = useState<Sheltered | null>(
-    null,
+  const params = useParams()
+  const shelterId = params.shelter as string
+
+  const [sheltered, setSheltered] = useState<ShelteredPerson[]>([])
+  const [filteredSheltered, setFilteredSheltered] = useState<ShelteredPerson[]>(
+    [],
   )
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [form, setForm] = useState(INITIAL_FORM)
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
-  const [generoFilter, setGeneroFilter] = useState('')
-  const [idadeFilter, setIdadeFilter] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [sheltered, setSheltered] = useState<Sheltered[]>(MOCK_SHELTERED)
 
-  // Filtros
-  const filtered = sheltered.filter((item) => {
-    const matchSearch =
-      item.nome.toLowerCase().includes(search.toLowerCase()) ||
-      item.cpf.includes(search)
-    const matchStatus = !statusFilter || item.status === statusFilter
-    const matchGenero = !generoFilter || item.genero === generoFilter
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [selectedSheltered, setSelectedSheltered] =
+    useState<ShelteredPerson | null>(null)
 
-    // Filtro de idade
-    let matchIdade = true
-    if (idadeFilter) {
-      const today = new Date()
-      const birthDate = new Date(
-        item.dataNascimento.split('/').reverse().join('-'),
-      )
-      const age = today.getFullYear() - birthDate.getFullYear()
+  const [formData, setFormData] = useState<FormData>(INITIAL_FORM)
 
-      if (idadeFilter === '0-17') matchIdade = age >= 0 && age <= 17
-      else if (idadeFilter === '18-30') matchIdade = age >= 18 && age <= 30
-      else if (idadeFilter === '31-50') matchIdade = age >= 31 && age <= 50
-      else if (idadeFilter === '51+') matchIdade = age >= 51
-    }
+  const [filterStatus, setFilterStatus] = useState('')
+  const [filterGenero, setFilterGenero] = useState('')
+  const [filterIdade, setFilterIdade] = useState('')
 
-    return matchSearch && matchStatus && matchGenero && matchIdade
-  })
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // Configuração de paginação
-  const totalItems = filtered.length
-  const totalPages = Math.ceil(totalItems / PAGE_SIZE)
-  const startIndex = (currentPage - 1) * PAGE_SIZE
-  const endIndex = startIndex + PAGE_SIZE
-  const paginatedData = filtered.slice(startIndex, endIndex)
+  /**
+   * Carregar os abrigados do abrigo
+   */
+  const loadSheltered = useCallback(async () => {
+    if (!shelterId) return
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
-  const handleInput = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setSheltered([...sheltered, form])
-    setForm(INITIAL_FORM)
-    setModalOpen(false)
-  }
-
-  const handleDeleteClick = (person: Sheltered) => {
-    setShelteredToDelete(person)
-    setDeleteModalOpen(true)
-  }
-
-  const handleDeleteConfirm = async () => {
-    if (!shelteredToDelete) return
-
-    setIsDeleting(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log('Deleted:', shelteredToDelete)
-      setSheltered(sheltered.filter((s) => s.cpf !== shelteredToDelete.cpf))
-    } catch (error) {
-      console.error('Error deleting sheltered:', error)
+      setIsLoading(true)
+      setError(null)
+      const data = await shelteredPeopleService.findByShelterId(shelterId)
+      setSheltered(data)
+      setFilteredSheltered(data)
+    } catch (err) {
+      console.error('Erro ao carregar abrigados:', err)
+      setError('Erro ao carregar abrigados. Tente novamente.')
     } finally {
-      setIsDeleting(false)
-      setDeleteModalOpen(false)
-      setShelteredToDelete(null)
+      setIsLoading(false)
+    }
+  }, [shelterId])
+
+  /**
+   * Carregar dados ao montar o componente
+   */
+  useEffect(() => {
+    loadSheltered()
+  }, [loadSheltered])
+
+  /**
+   * Calcular a idade a partir da data de nascimento
+   */
+  const calculateAge = (birthDate: string): number => {
+    const today = new Date()
+    const birth = new Date(birthDate)
+    let age = today.getFullYear() - birth.getFullYear()
+    const monthDiff = today.getMonth() - birth.getMonth()
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
+      age--
+    }
+
+    return age
+  }
+
+  /**
+   * Verificar se a idade está na faixa especificada
+   */
+  const isInAgeRange = (age: number, range: string): boolean => {
+    switch (range) {
+      case '0-18':
+        return age >= 0 && age <= 18
+      case '19-30':
+        return age >= 19 && age <= 30
+      case '31-50':
+        return age >= 31 && age <= 50
+      case '51+':
+        return age >= 51
+      default:
+        return true
     }
   }
 
-  const clearFilters = () => {
-    setSearch('')
-    setStatusFilter('')
-    setGeneroFilter('')
-    setIdadeFilter('')
+  /**
+   * Aplicar filtros aos abrigados
+   */
+  useEffect(() => {
+    let filtered = sheltered
+
+    if (filterStatus) {
+      filtered = filtered.filter((s) => s.status === filterStatus)
+    }
+
+    if (filterGenero) {
+      filtered = filtered.filter((s) => s.genero === filterGenero)
+    }
+
+    if (filterIdade) {
+      filtered = filtered.filter((s) => {
+        const age = calculateAge(s.dataNascimento)
+        return isInAgeRange(age, filterIdade)
+      })
+    }
+
+    setFilteredSheltered(filtered)
+  }, [sheltered, filterStatus, filterGenero, filterIdade])
+
+  /**
+   * Abrir modal para adicionar novo abrigado
+   */
+  const handleAdd = () => {
+    setIsEditMode(false)
+    setSelectedSheltered(null)
+    setFormData(INITIAL_FORM)
+    setIsModalOpen(true)
+  }
+
+  /**
+   * Abrir modal para editar abrigado
+   */
+  const handleEdit = (person: ShelteredPerson) => {
+    setIsEditMode(true)
+    setSelectedSheltered(person)
+    setFormData({
+      nome: person.nome,
+      cpf: person.cpf,
+      dataNascimento: person.dataNascimento,
+      genero: person.genero,
+      status: person.status,
+    })
+    setIsModalOpen(true)
+  }
+
+  /**
+   * Abrir modal de confirmação para deletar
+   */
+  const handleDelete = (person: ShelteredPerson) => {
+    setSelectedSheltered(person)
+    setIsDeleteModalOpen(true)
+  }
+
+  /**
+   * Confirmar deleção do abrigado
+   */
+  const handleDeleteConfirm = async () => {
+    if (!selectedSheltered) return
+
+    try {
+      setIsSaving(true)
+      setError(null)
+      await shelteredPeopleService.delete(selectedSheltered.id)
+      await loadSheltered()
+      setIsDeleteModalOpen(false)
+      setSelectedSheltered(null)
+    } catch (err) {
+      console.error('Erro ao deletar abrigado:', err)
+      setError('Erro ao deletar abrigado. Tente novamente.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  /**
+   * Manipular mudanças nos inputs do formulário
+   */
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  /**
+   * Submeter formulário (criar ou atualizar)
+   */
+  const handleSubmit = async () => {
+    try {
+      setIsSaving(true)
+      setError(null)
+
+      if (isEditMode && selectedSheltered) {
+        // Atualizar abrigado existente
+        const updateData: UpdateShelteredPersonData = {
+          ...formData,
+        }
+        await shelteredPeopleService.update(selectedSheltered.id, updateData)
+      } else {
+        // Criar novo abrigado
+        const createData: CreateShelteredPersonData = {
+          ...formData,
+          shelterId,
+        }
+        await shelteredPeopleService.create(createData)
+      }
+
+      await loadSheltered()
+      setIsModalOpen(false)
+      setFormData(INITIAL_FORM)
+      setSelectedSheltered(null)
+    } catch (err) {
+      console.error('Erro ao salvar abrigado:', err)
+      setError('Erro ao salvar abrigado. Verifique os dados e tente novamente.')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return {
-    modalOpen,
-    setModalOpen,
-    deleteModalOpen,
-    setDeleteModalOpen,
-    shelteredToDelete,
-    setShelteredToDelete,
-    isDeleting,
-    form,
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
-    generoFilter,
-    setGeneroFilter,
-    idadeFilter,
-    setIdadeFilter,
-    currentPage,
-    paginatedData,
-    totalPages,
-    totalItems,
-    handlePageChange,
-    handleInput,
-    handleSubmit,
-    handleDeleteClick,
+    // Dados
+    sheltered: filteredSheltered,
+    formData,
+    selectedSheltered,
+
+    // Estados de UI
+    isModalOpen,
+    isDeleteModalOpen,
+    isEditMode,
+
+    // Estados de carregamento
+    isLoading,
+    isSaving,
+    error,
+
+    // Filtros
+    filterStatus,
+    filterGenero,
+    filterIdade,
+    setFilterStatus,
+    setFilterGenero,
+    setFilterIdade,
+
+    // Constantes
+    statusOptions: STATUS_OPTIONS,
+    generoOptions: GENERO_OPTIONS,
+    idadeOptions: IDADE_OPTIONS,
+
+    // Funções de controle de modals
+    setIsModalOpen,
+    setIsDeleteModalOpen,
+
+    // Funções de ação
+    handleAdd,
+    handleEdit,
+    handleDelete,
     handleDeleteConfirm,
-    clearFilters,
+    handleInputChange,
+    handleSubmit,
+    loadSheltered,
   }
 }

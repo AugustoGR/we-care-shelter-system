@@ -23,10 +23,10 @@ interface ModalFormProps {
     genero: string
     status: string
   }
-  onInputChange: (
-    _event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => void
-  onSubmit: (_event: React.FormEvent) => void
+  onInputChange: (field: string, value: string) => void
+  onSubmit: () => void
+  isEditMode?: boolean
+  isSaving?: boolean
 }
 
 export function ModalForm({
@@ -35,14 +35,32 @@ export function ModalForm({
   form,
   onInputChange,
   onSubmit,
+  isEditMode = false,
+  isSaving = false,
 }: ModalFormProps) {
   if (!isOpen) return null
 
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    onInputChange(e.target.name, e.target.value)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSubmit()
+  }
+
   return (
     <ModalRoot onClose={onClose}>
-      <ModalHeader title="Cadastrar Novo Abrigado" onClose={onClose} />
+      <ModalHeader
+        title={
+          isEditMode ? 'Editar Abrigado' : 'Cadastrar Novo Abrigado'
+        }
+        onClose={onClose}
+      />
       <ModalContent>
-        <FormRoot onSubmit={onSubmit}>
+        <FormRoot onSubmit={handleSubmit}>
           <FormRow columns={1}>
             <FormField label="Nome Completo" htmlFor="nome" required>
               <Input
@@ -50,8 +68,9 @@ export function ModalForm({
                 name="nome"
                 placeholder="Digite o nome completo"
                 value={form.nome}
-                onChange={onInputChange}
+                onChange={handleInputChange}
                 required
+                disabled={isSaving}
               />
             </FormField>
           </FormRow>
@@ -63,8 +82,9 @@ export function ModalForm({
                 name="cpf"
                 placeholder="000.000.000-00"
                 value={form.cpf}
-                onChange={onInputChange}
+                onChange={handleInputChange}
                 required
+                disabled={isSaving}
               />
             </FormField>
 
@@ -78,8 +98,9 @@ export function ModalForm({
                 name="dataNascimento"
                 type="date"
                 value={form.dataNascimento}
-                onChange={onInputChange}
+                onChange={handleInputChange}
                 required
+                disabled={isSaving}
               />
             </FormField>
           </FormRow>
@@ -90,10 +111,11 @@ export function ModalForm({
                 id="genero"
                 name="genero"
                 value={form.genero}
-                onChange={onInputChange}
+                onChange={handleInputChange}
                 options={GENERO_OPTIONS}
                 placeholder="Selecione o gênero"
                 required
+                disabled={isSaving}
               />
             </FormField>
 
@@ -102,19 +124,29 @@ export function ModalForm({
                 id="status"
                 name="status"
                 value={form.status}
-                onChange={onInputChange}
+                onChange={handleInputChange}
                 options={STATUS_OPTIONS}
                 required
+                disabled={isSaving}
               />
             </FormField>
           </FormRow>
 
           <ModalActions>
-            <Button type="button" variant="secondary" onClick={onClose}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              disabled={isSaving}
+            >
               Cancelar
             </Button>
-            <Button type="submit" variant="primary">
-              Cadastrar Abrigado
+            <Button type="submit" variant="primary" disabled={isSaving}>
+              {isSaving
+                ? 'Salvando...'
+                : isEditMode
+                  ? 'Salvar Alterações'
+                  : 'Cadastrar Abrigado'}
             </Button>
           </ModalActions>
         </FormRoot>

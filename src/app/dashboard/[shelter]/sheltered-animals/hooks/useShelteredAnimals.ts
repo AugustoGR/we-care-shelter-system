@@ -1,21 +1,54 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 
-import { Animal, ANIMALS, INITIAL_FORM } from '../constants/animals'
+import { useParams } from 'next/navigation'
+
+import { Animal } from '@/@types/animalProps'
+import { animalsService } from '@/services'
+
+import { INITIAL_FORM } from '../constants/animals'
 
 export const useShelteredAnimals = () => {
+  const params = useParams()
+  const shelterId = params.shelter as string
+
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [animalToDelete, setAnimalToDelete] = useState<Animal | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [animals, setAnimals] = useState<Animal[]>([])
   const [form, setForm] = useState(INITIAL_FORM)
   const [search, setSearch] = useState('')
   const [speciesFilter, setSpeciesFilter] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
-  const filtered = ANIMALS.filter((a) => {
+  // Carregar animais do abrigo
+  const loadAnimals = useCallback(async () => {
+    if (!shelterId) return
+
+    try {
+      setIsLoading(true)
+      setError(null)
+      const data = await animalsService.findByShelterId(shelterId)
+      setAnimals(data)
+    } catch (err: any) {
+      console.error('Error loading animals:', err)
+      setError(err.response?.data?.message || 'Erro ao carregar animais')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [shelterId])
+
+  useEffect(() => {
+    loadAnimals()
+  }, [loadAnimals])
+
+  const filtered = animals.filter((a) => {
     const matchSearch =
       a.name.toLowerCase().includes(search.toLowerCase()) ||
       a.species.toLowerCase().includes(search.toLowerCase()) ||
-      a.breed.toLowerCase().includes(search.toLowerCase())
+      (a.breed?.toLowerCase() || '').includes(search.toLowerCase())
     const matchSpecies = speciesFilter ? a.species === speciesFilter : true
     return matchSearch && matchSpecies
   })
@@ -25,14 +58,57 @@ export const useShelteredAnimals = () => {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+    console.log('handleInputChange:', { name, value }) // Debug
+    setForm({ ...form, [name]: value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Form submitted:', form)
-    setIsModalOpen(false)
-    setForm(INITIAL_FORM)
+
+    try {
+      setIsSaving(true)
+      setError(null)
+
+      console.log('Form data before submit:', form) // Debug
+
+      // Converter age para number se preenchido
+      const age = form.age ? parseInt(form.age) : undefined
+
+      // Por enquanto, não vamos fazer upload de foto
+      // Você pode implementar isso posteriormente
+      const animalData = {
+        name: form.name,
+        species: form.species,
+        breed: form.breed || undefined,
+        age,
+        sex: form.sex,
+        health: form.health,
+        care: form.care || undefined,
+        rabies: form.rabies,
+        cinomose: form.cinomose,
+        parvo: form.parvo,
+        felina: form.felina,
+        status: form.health, // Status inicial baseado na saúde
+        shelterId,
+      }
+
+      console.log('Animal data to send:', animalData) // Debug
+
+      await animalsService.create(animalData)
+
+      // Recarregar lista
+      await loadAnimals()
+
+      // Fechar modal e resetar form
+      setIsModalOpen(false)
+      setForm(INITIAL_FORM)
+    } catch (err: any) {
+      console.error('Error creating animal:', err)
+      setError(err.response?.data?.message || 'Erro ao criar animal')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleDeleteClick = (animal: Animal) => {
@@ -45,10 +121,13 @@ export const useShelteredAnimals = () => {
 
     setIsDeleting(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log('Deleted:', animalToDelete)
-    } catch (error) {
-      console.error('Error deleting animal:', error)
+      await animalsService.delete(animalToDelete.id)
+
+      // Recarregar lista
+      await loadAnimals()
+    } catch (err: any) {
+      console.error('Error deleting animal:', err)
+      setError(err.response?.data?.message || 'Erro ao deletar animal')
     } finally {
       setIsDeleting(false)
       setDeleteModalOpen(false)
@@ -77,6 +156,9 @@ export const useShelteredAnimals = () => {
     animalToDelete,
     setAnimalToDelete,
     isDeleting,
+    isLoading,
+    isSaving,
+    error,
     form,
     setForm,
     search,
@@ -84,6 +166,7 @@ export const useShelteredAnimals = () => {
     speciesFilter,
     setSpeciesFilter,
     filtered,
+    animals,
     handleInputChange,
     handleSubmit,
     handleDeleteClick,
@@ -91,5 +174,6 @@ export const useShelteredAnimals = () => {
     handleCheckboxChange,
     handleFileChange,
     clearFilters,
+    loadAnimals,
   }
 }

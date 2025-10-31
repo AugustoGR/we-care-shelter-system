@@ -1,5 +1,6 @@
 'use client'
-import React from 'react'
+
+import React, { useState } from 'react'
 
 import { FilterBar } from '@/components/layout/FilterBar'
 import { PageLayout } from '@/components/layout/PageLayout'
@@ -11,10 +12,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge'
 
 import { ModalForm } from './components/ModalForm'
 import {
-  type Sheltered,
-  STATUS_OPTIONS,
-  GENERO_OPTIONS,
-  IDADE_OPTIONS,
+  type ShelteredPerson,
   PAGE_SIZE,
   COLUMNS,
 } from './constants/sheltered'
@@ -22,75 +20,105 @@ import { useSheltered } from './hooks/useSheltered'
 
 export default function Sheltered() {
   const {
-    modalOpen,
-    setModalOpen,
-    deleteModalOpen,
-    setDeleteModalOpen,
-    shelteredToDelete,
-    setShelteredToDelete,
-    isDeleting,
-    form,
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
-    generoFilter,
-    setGeneroFilter,
-    idadeFilter,
-    setIdadeFilter,
-    currentPage,
-    paginatedData,
-    totalPages,
-    totalItems,
-    handlePageChange,
-    handleInput,
-    handleSubmit,
-    handleDeleteClick,
+    sheltered,
+    formData,
+    selectedSheltered,
+    isModalOpen,
+    isDeleteModalOpen,
+    isEditMode,
+    isLoading,
+    isSaving,
+    error,
+    filterStatus,
+    filterGenero,
+    filterIdade,
+    setFilterStatus,
+    setFilterGenero,
+    setFilterIdade,
+    statusOptions,
+    generoOptions,
+    idadeOptions,
+    setIsModalOpen,
+    setIsDeleteModalOpen,
+    handleAdd,
+    handleEdit,
+    handleDelete,
     handleDeleteConfirm,
-    clearFilters,
+    handleInputChange,
+    handleSubmit,
   } = useSheltered()
 
+  const [currentPage, setCurrentPage] = useState(1)
+
+  // Paginação
+  const startIndex = (currentPage - 1) * PAGE_SIZE
+  const endIndex = startIndex + PAGE_SIZE
+  const paginatedData = sheltered.slice(startIndex, endIndex)
+  const totalPages = Math.ceil(sheltered.length / PAGE_SIZE)
+
   // Adicionar renderização JSX para a coluna de status
-  const columns: Column<Sheltered>[] = COLUMNS.map((col) => {
+  const columns: Column<ShelteredPerson>[] = COLUMNS.map((col) => {
     if (col.header === 'Status') {
       return {
         ...col,
-        accessor: (row: Sheltered) => <StatusBadge status={row.status} />,
+        accessor: (row: ShelteredPerson) => <StatusBadge status={row.status} />,
       }
     }
     return col
   })
 
+  // Limpar filtros
+  const clearFilters = () => {
+    setFilterStatus('')
+    setFilterGenero('')
+    setFilterIdade('')
+    setCurrentPage(1)
+  }
+
   return (
     <PageLayout
       title="Gestão de Abrigados"
       subtitle="Visualize e gerencie todos os indivíduos abrigados."
-      onAdd={() => setModalOpen(true)}
+      onAdd={handleAdd}
       addButtonText="Adicionar Novo Abrigado"
     >
-      <FilterBar
-        searchValue={search}
-        searchPlaceholder="Buscar abrigado..."
-        onSearchChange={setSearch}
+      {error && (
+        <div
+          style={{
+            padding: '12px',
+            marginBottom: '16px',
+            backgroundColor: '#FEE',
+            border: '1px solid #FCC',
+            borderRadius: '8px',
+            color: '#C00',
+          }}
+        >
+          {error}
+        </div>
+      )}
 
+      <FilterBar
+        searchValue=""
+        searchPlaceholder="Buscar abrigado..."
+        onSearchChange={() => {}}
         filters={
           <>
             <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              options={STATUS_OPTIONS}
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              options={statusOptions}
               placeholder="Status"
             />
             <Select
-              value={generoFilter}
-              onChange={(e) => setGeneroFilter(e.target.value)}
-              options={GENERO_OPTIONS}
+              value={filterGenero}
+              onChange={(e) => setFilterGenero(e.target.value)}
+              options={generoOptions}
               placeholder="Gênero"
             />
             <Select
-              value={idadeFilter}
-              onChange={(e) => setIdadeFilter(e.target.value)}
-              options={IDADE_OPTIONS}
+              value={filterIdade}
+              onChange={(e) => setFilterIdade(e.target.value)}
+              options={idadeOptions}
               placeholder="Idade"
             />
           </>
@@ -102,44 +130,57 @@ export default function Sheltered() {
         title="Lista de Abrigados"
         subtitle="Gerencie os detalhes de cada indivíduo abrigado."
       >
-        <DataTable
-          data={paginatedData}
-          columns={columns}
-          onEdit={(row) => console.log('Edit', row)}
-          onDelete={handleDeleteClick}
-          emptyMessage="Nenhum abrigado encontrado."
-          pagination={{
-            currentPage,
-            totalPages,
-            onPageChange: handlePageChange,
-            pageSize: PAGE_SIZE,
-            totalItems,
-          }}
-        />
+        {isLoading ? (
+          <div style={{ padding: '40px', textAlign: 'center' }}>
+            Carregando...
+          </div>
+        ) : (
+          <DataTable
+            data={paginatedData}
+            columns={columns}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            emptyMessage="Nenhum abrigado encontrado."
+            pagination={{
+              currentPage,
+              totalPages,
+              onPageChange: setCurrentPage,
+              pageSize: PAGE_SIZE,
+              totalItems: sheltered.length,
+            }}
+          />
+        )}
       </TableCard>
 
       <ConfirmationModal
-        isOpen={deleteModalOpen}
-        onClose={() => {
-          setDeleteModalOpen(false)
-          setShelteredToDelete(null)
-        }}
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Confirmar Exclusão"
-        message={`Tem certeza que deseja excluir o abrigado ${shelteredToDelete?.nome}?`}
+        message={`Tem certeza que deseja excluir o abrigado ${selectedSheltered?.nome}?`}
         confirmText="Excluir"
         confirmButtonStyle={{ backgroundColor: '#E45B63' }}
-        isLoading={isDeleting}
+        isLoading={isSaving}
         loadingText="Excluindo..."
         showUndoWarning={true}
       />
 
       <ModalForm
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        form={form}
-        onInputChange={handleInput}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        form={{
+          nome: formData.nome || '',
+          cpf: formData.cpf || '',
+          dataNascimento: formData.dataNascimento || '',
+          genero: formData.genero || '',
+          status: formData.status || 'Ativo',
+        }}
+        onInputChange={(field, value) =>
+          handleInputChange(field as keyof typeof formData, value)
+        }
         onSubmit={handleSubmit}
+        isEditMode={isEditMode}
+        isSaving={isSaving}
       />
     </PageLayout>
   )

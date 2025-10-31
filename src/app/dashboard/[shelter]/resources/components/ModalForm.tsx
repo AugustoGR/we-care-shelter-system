@@ -28,6 +28,7 @@ interface ModalFormProps {
     _event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => void
   onSubmit: (_event: React.FormEvent) => void
+  isSubmitting?: boolean
 }
 
 export function ModalForm({
@@ -36,6 +37,7 @@ export function ModalForm({
   form,
   onInputChange,
   onSubmit,
+  isSubmitting = false,
 }: ModalFormProps) {
   if (!isOpen) return null
 
@@ -126,11 +128,11 @@ export function ModalForm({
             </FormField>
           </FormRow>
           <ModalActions>
-            <Button type="button" variant="secondary" onClick={onClose}>
+            <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button type="submit" variant="primary">
-              Cadastrar Recurso
+            <Button type="submit" variant="primary" disabled={isSubmitting}>
+              {isSubmitting ? 'Cadastrando...' : 'Cadastrar Recurso'}
             </Button>
           </ModalActions>
         </FormRoot>

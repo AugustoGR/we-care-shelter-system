@@ -23,6 +23,9 @@ export default function ShelteredAnimalsPage() {
     animalToDelete,
     setAnimalToDelete,
     isDeleting,
+    isLoading,
+    isSaving,
+    error,
     form,
     search,
     setSearch,
@@ -52,6 +55,18 @@ export default function ShelteredAnimalsPage() {
         accessor: (row: Animal) => <StatusBadge status={row.status} />,
       }
     }
+    if (col.header === 'Idade') {
+      return {
+        ...col,
+        accessor: (row: Animal) => (row.age ? `${row.age} anos` : '-'),
+      }
+    }
+    if (col.header === 'Raça') {
+      return {
+        ...col,
+        accessor: (row: Animal) => row.breed || '-',
+      }
+    }
     return col
   })
 
@@ -62,11 +77,24 @@ export default function ShelteredAnimalsPage() {
       onAdd={() => setIsModalOpen(true)}
       addButtonText="Adicionar Animal"
     >
+      {error && (
+        <div
+          style={{
+            padding: '1rem',
+            marginBottom: '1rem',
+            backgroundColor: '#fee',
+            color: '#c00',
+            borderRadius: '4px',
+          }}
+        >
+          {error}
+        </div>
+      )}
+
       <FilterBar
         searchValue={search}
         searchPlaceholder="Buscar por nome, espécie ou raça..."
         onSearchChange={setSearch}
-
         filters={
           <Select
             value={speciesFilter}
@@ -82,13 +110,19 @@ export default function ShelteredAnimalsPage() {
         title="Animais no Abrigo"
         subtitle="Visualize e gerencie todos os animais cadastrados."
       >
-        <DataTable
-          data={filtered}
-          columns={columns}
-          onEdit={(row) => console.log('Edit', row)}
-          onDelete={handleDeleteClick}
-          emptyMessage="Nenhum animal encontrado."
-        />
+        {isLoading ? (
+          <div style={{ textAlign: 'center', padding: '2rem' }}>
+            Carregando animais...
+          </div>
+        ) : (
+          <DataTable
+            data={filtered}
+            columns={columns}
+            onEdit={(row) => console.log('Edit', row)}
+            onDelete={handleDeleteClick}
+            emptyMessage="Nenhum animal encontrado."
+          />
+        )}
       </TableCard>
 
       <ConfirmationModal
@@ -115,6 +149,7 @@ export default function ShelteredAnimalsPage() {
         onCheckboxChange={handleCheckboxChange}
         onFileChange={handleFileChange}
         onSubmit={handleSubmit}
+        isSaving={isSaving}
       />
     </PageLayout>
   )

@@ -1,6 +1,7 @@
 'use client'
 import React from 'react'
 
+import { ResourceProps } from '@/@types'
 import { FilterBar } from '@/components/layout/FilterBar'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { TableCard } from '@/components/layout/TableCard'
@@ -10,7 +11,7 @@ import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 
 import { ModalForm } from './components/ModalForm'
-import { CATEGORIAS, COLUMNS, Resource } from './constants/resources'
+import { CATEGORIAS, COLUMNS } from './constants/resources'
 import { useResources } from './hooks/useResources'
 
 export default function Resources() {
@@ -26,6 +27,7 @@ export default function Resources() {
     resourceToDelete,
     setResourceToDelete,
     isDeleting,
+    isSubmitting,
     form,
     filteredResources,
     handleInputChange,
@@ -35,11 +37,11 @@ export default function Resources() {
   } = useResources()
 
   // Adicionar renderização JSX para a coluna de status
-  const columns: Column<Resource>[] = COLUMNS.map((col) => {
+  const columns: Column<ResourceProps>[] = COLUMNS.map((col) => {
     if (col.header === 'Status') {
       return {
         ...col,
-        accessor: (row: Resource) => <StatusBadge status={row.status} />,
+        accessor: (row: ResourceProps) => <StatusBadge status={row.status} />,
       }
     }
     return col
@@ -106,6 +108,7 @@ export default function Resources() {
         form={form}
         onInputChange={handleInputChange}
         onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
       />
     </PageLayout>
   )
