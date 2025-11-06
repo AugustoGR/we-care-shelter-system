@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 
+import moment from 'moment'
 import { useParams } from 'next/navigation'
 
 import { ResourceProps } from '@/@types'
@@ -19,6 +20,8 @@ export const useResources = () => {
   const [categoriaFiltro, setCategoriaFiltro] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [resourceToEdit, setResourceToEdit] = useState<ResourceProps | null>(null)
   const [resourceToDelete, setResourceToDelete] = useState<ResourceProps | null>(
     null,
   )
@@ -59,6 +62,22 @@ export const useResources = () => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
+  const handleEdit = (resource: ResourceProps) => {
+    setIsEditMode(true)
+    setResourceToEdit(resource)
+    setForm({
+      nome: resource.nome,
+      categoria: resource.categoria,
+      quantidade: String(resource.quantidade),
+      unidade: resource.unidade,
+      validade: resource.validade
+        ? moment.utc(resource.validade).format('YYYY-MM-DD')
+        : '',
+      status: resource.status,
+    })
+    setModalOpen(true)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -68,17 +87,28 @@ export const useResources = () => {
     try {
       const quantidade = parseInt(form.quantidade, 10)
 
-      await resourcesService.create({
-        ...form,
-        quantidade,
-        shelterId,
-      })
+      if (isEditMode && resourceToEdit) {
+        // Atualizar recurso existente
+        await resourcesService.update(resourceToEdit.id, {
+          ...form,
+          quantidade,
+        })
+      } else {
+        // Criar novo recurso
+        await resourcesService.create({
+          ...form,
+          quantidade,
+          shelterId,
+        })
+      }
 
       setModalOpen(false)
       setForm(INITIAL_FORM)
+      setIsEditMode(false)
+      setResourceToEdit(null)
       await loadResources()
     } catch (error) {
-      console.error('Error creating resource:', error)
+      console.error('Error saving resource:', error)
     } finally {
       setIsSubmitting(false)
     }
@@ -116,6 +146,8 @@ export const useResources = () => {
     setModalOpen,
     deleteModalOpen,
     setDeleteModalOpen,
+    isEditMode,
+    resourceToEdit,
     resourceToDelete,
     setResourceToDelete,
     isDeleting,
@@ -125,6 +157,7 @@ export const useResources = () => {
     filteredResources,
     handleInputChange,
     handleSubmit,
+    handleEdit,
     handleDeleteClick,
     handleDeleteConfirm,
   }

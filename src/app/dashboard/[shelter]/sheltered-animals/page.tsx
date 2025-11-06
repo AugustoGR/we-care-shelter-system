@@ -18,6 +18,7 @@ export default function ShelteredAnimalsPage() {
   const {
     isModalOpen,
     setIsModalOpen,
+    isEditMode,
     deleteModalOpen,
     setDeleteModalOpen,
     animalToDelete,
@@ -33,6 +34,7 @@ export default function ShelteredAnimalsPage() {
     setSpeciesFilter,
     filtered,
     handleInputChange,
+    handleEdit,
     handleSubmit,
     handleDeleteClick,
     handleDeleteConfirm,
@@ -118,7 +120,7 @@ export default function ShelteredAnimalsPage() {
           <DataTable
             data={filtered}
             columns={columns}
-            onEdit={(row) => console.log('Edit', row)}
+            onEdit={handleEdit}
             onDelete={handleDeleteClick}
             emptyMessage="Nenhum animal encontrado."
           />
@@ -150,6 +152,7 @@ export default function ShelteredAnimalsPage() {
         onFileChange={handleFileChange}
         onSubmit={handleSubmit}
         isSaving={isSaving}
+        isEditMode={isEditMode}
       />
     </PageLayout>
   )

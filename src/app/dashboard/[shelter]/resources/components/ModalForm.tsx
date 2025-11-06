@@ -29,6 +29,7 @@ interface ModalFormProps {
   ) => void
   onSubmit: (_event: React.FormEvent) => void
   isSubmitting?: boolean
+  isEditMode?: boolean
 }
 
 export function ModalForm({
@@ -38,12 +39,16 @@ export function ModalForm({
   onInputChange,
   onSubmit,
   isSubmitting = false,
+  isEditMode = false,
 }: ModalFormProps) {
   if (!isOpen) return null
 
   return (
     <ModalRoot onClose={onClose}>
-      <ModalHeader title="Cadastrar Novo Recurso" onClose={onClose} />
+      <ModalHeader
+        title={isEditMode ? 'Editar Recurso' : 'Cadastrar Novo Recurso'}
+        onClose={onClose}
+      />
       <ModalContent>
         <FormRoot onSubmit={onSubmit}>
           <FormRow columns={1}>
@@ -132,7 +137,13 @@ export function ModalForm({
               Cancelar
             </Button>
             <Button type="submit" variant="primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Cadastrando...' : 'Cadastrar Recurso'}
+              {isSubmitting
+                ? isEditMode
+                  ? 'Salvando...'
+                  : 'Cadastrando...'
+                : isEditMode
+                  ? 'Salvar Alterações'
+                  : 'Cadastrar Recurso'}
             </Button>
           </ModalActions>
         </FormRoot>

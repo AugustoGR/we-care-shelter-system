@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
+import moment from 'moment'
 import { useParams } from 'next/navigation'
 
 import {
@@ -40,6 +41,7 @@ export const useSheltered = () => {
   const [filterStatus, setFilterStatus] = useState('')
   const [filterGenero, setFilterGenero] = useState('')
   const [filterIdade, setFilterIdade] = useState('')
+  const [searchValue, setSearchValue] = useState('')
 
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -76,19 +78,9 @@ export const useSheltered = () => {
    * Calcular a idade a partir da data de nascimento
    */
   const calculateAge = (birthDate: string): number => {
-    const today = new Date()
-    const birth = new Date(birthDate)
-    let age = today.getFullYear() - birth.getFullYear()
-    const monthDiff = today.getMonth() - birth.getMonth()
-
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birth.getDate())
-    ) {
-      age--
-    }
-
-    return age
+    const today = moment()
+    const birth = moment.utc(birthDate)
+    return today.diff(birth, 'years')
   }
 
   /**
@@ -115,6 +107,16 @@ export const useSheltered = () => {
   useEffect(() => {
     let filtered = sheltered
 
+    // Filtro de busca por nome ou CPF
+    if (searchValue) {
+      const searchLower = searchValue.toLowerCase()
+      filtered = filtered.filter(
+        (s) =>
+          s.nome.toLowerCase().includes(searchLower) ||
+          s.cpf.includes(searchValue),
+      )
+    }
+
     if (filterStatus) {
       filtered = filtered.filter((s) => s.status === filterStatus)
     }
@@ -131,7 +133,7 @@ export const useSheltered = () => {
     }
 
     setFilteredSheltered(filtered)
-  }, [sheltered, filterStatus, filterGenero, filterIdade])
+  }, [sheltered, searchValue, filterStatus, filterGenero, filterIdade])
 
   /**
    * Abrir modal para adicionar novo abrigado
@@ -152,7 +154,7 @@ export const useSheltered = () => {
     setFormData({
       nome: person.nome,
       cpf: person.cpf,
-      dataNascimento: person.dataNascimento,
+      dataNascimento: moment.utc(person.dataNascimento).format('YYYY-MM-DD'),
       genero: person.genero,
       status: person.status,
     })
@@ -253,9 +255,11 @@ export const useSheltered = () => {
     filterStatus,
     filterGenero,
     filterIdade,
+    searchValue,
     setFilterStatus,
     setFilterGenero,
     setFilterIdade,
+    setSearchValue,
 
     // Constantes
     statusOptions: STATUS_OPTIONS,

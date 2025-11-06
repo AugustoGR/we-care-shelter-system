@@ -1,3 +1,5 @@
+import moment from 'moment'
+
 import { ResourceProps } from '@/@types'
 import { Column } from '@/components/ui/DataTable'
 
@@ -52,14 +54,13 @@ export const COLUMNS: Column<ResourceProps>[] = [
     header: 'Validade',
     accessor: (row) => {
       if (!row.validade) return 'Sem validade'
-      const date = new Date(row.validade)
-      return date.toLocaleDateString('pt-BR')
+      return moment.utc(row.validade).format('DD/MM/YYYY')
     },
     width: '140px',
   },
   {
     header: 'Status',
     accessor: 'status',
-    width: '150px',
+    width: '100px',
   },
 ]

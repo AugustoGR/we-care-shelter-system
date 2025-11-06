@@ -1,3 +1,5 @@
+import moment from 'moment'
+
 import {
   ShelteredPerson,
   CreateShelteredPersonData,
@@ -51,7 +53,8 @@ export const COLUMNS: Column<ShelteredPerson>[] = [
   },
   {
     header: 'Data de Nascimento',
-    accessor: 'dataNascimento',
+    accessor: (row: ShelteredPerson) =>
+      moment.utc(row.dataNascimento).format('DD/MM/YYYY'),
     width: '180px',
   },
   {

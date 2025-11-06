@@ -17,9 +17,12 @@ export const useVolunteers = () => {
   const [statusFilter, setStatusFilter] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [volunteerToEdit, setVolunteerToEdit] = useState<VolunteerProps | null>(null)
   const [volunteerToDelete, setVolunteerToDelete] =
     useState<VolunteerProps | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [form, setForm] = useState(INITIAL_FORM)
 
   // Carregar voluntários do abrigo
@@ -63,27 +66,56 @@ export const useVolunteers = () => {
     setForm({ ...form, userId })
   }
 
+  const handleEdit = (volunteer: VolunteerProps) => {
+    setIsEditMode(true)
+    setVolunteerToEdit(volunteer)
+    setForm({
+      userId: volunteer.userId,
+      phone: volunteer.phone,
+      skills: volunteer.skills.join(', '),
+      status: volunteer.status,
+    })
+    setModalOpen(true)
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
+    if (isSubmitting) return
+
+    setIsSubmitting(true)
     try {
       const skills = form.skills
         ? form.skills.split(',').map((s) => s.trim())
         : []
 
-      await volunteersService.create({
-        userId: form.userId,
-        phone: form.phone,
-        skills,
-        status: form.status,
-        shelterId,
-      })
+      if (isEditMode && volunteerToEdit) {
+        // Atualizar voluntário existente
+        await volunteersService.update(volunteerToEdit.id, {
+          phone: form.phone,
+          skills,
+          status: form.status,
+        })
+      } else {
+        // Criar novo voluntário
+        await volunteersService.create({
+          userId: form.userId,
+          phone: form.phone,
+          skills,
+          status: form.status,
+          shelterId,
+        })
+      }
 
       setModalOpen(false)
       setForm(INITIAL_FORM)
+      setIsEditMode(false)
+      setVolunteerToEdit(null)
       await loadVolunteers()
     } catch (error) {
-      console.error('Error creating volunteer:', error)
+      console.error('Error saving volunteer:', error)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -122,14 +154,18 @@ export const useVolunteers = () => {
     setModalOpen,
     deleteModalOpen,
     setDeleteModalOpen,
+    isEditMode,
+    volunteerToEdit,
     volunteerToDelete,
     setVolunteerToDelete,
     isDeleting,
+    isSubmitting,
     form,
     filtered,
     loading,
     handleInputChange,
     handleUserSelect,
+    handleEdit,
     handleSubmit,
     handleDeleteClick,
     handleDeleteConfirm,

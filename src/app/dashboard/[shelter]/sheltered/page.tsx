@@ -32,9 +32,11 @@ export default function Sheltered() {
     filterStatus,
     filterGenero,
     filterIdade,
+    searchValue,
     setFilterStatus,
     setFilterGenero,
     setFilterIdade,
+    setSearchValue,
     statusOptions,
     generoOptions,
     idadeOptions,
@@ -69,6 +71,7 @@ export default function Sheltered() {
 
   // Limpar filtros
   const clearFilters = () => {
+    setSearchValue('')
     setFilterStatus('')
     setFilterGenero('')
     setFilterIdade('')
@@ -98,9 +101,12 @@ export default function Sheltered() {
       )}
 
       <FilterBar
-        searchValue=""
+        searchValue={searchValue}
         searchPlaceholder="Buscar abrigado..."
-        onSearchChange={() => {}}
+        onSearchChange={(value) => {
+          setSearchValue(value)
+          setCurrentPage(1) // Reset para primeira página ao buscar
+        }}
         filters={
           <>
             <Select

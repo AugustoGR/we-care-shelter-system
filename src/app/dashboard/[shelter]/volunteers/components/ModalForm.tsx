@@ -32,6 +32,8 @@ interface ModalFormProps {
   ) => void
   onUserSelect: (_userId: string, _userName: string, _userEmail: string) => void
   onSubmit: (_event: React.FormEvent) => void
+  isEditMode?: boolean
+  isSubmitting?: boolean
 }
 
 interface User {
@@ -47,6 +49,8 @@ export function ModalForm({
   onInputChange,
   onUserSelect,
   onSubmit,
+  isEditMode = false,
+  isSubmitting = false,
 }: ModalFormProps) {
   const searchUsers = async (query: string): Promise<AutocompleteOption[]> => {
     try {
@@ -76,7 +80,10 @@ export function ModalForm({
 
   return (
     <ModalRoot onClose={onClose}>
-      <ModalHeader title="Cadastrar Novo Voluntário" onClose={onClose} />
+      <ModalHeader
+        title={isEditMode ? 'Editar Voluntário' : 'Cadastrar Novo Voluntário'}
+        onClose={onClose}
+      />
       <ModalContent>
         <FormRoot onSubmit={onSubmit}>
           <FormRow columns={1}>
@@ -93,6 +100,7 @@ export function ModalForm({
                 placeholder="Digite o email do usuário (mínimo 3 caracteres)..."
                 minChars={3}
                 required
+                disabled={isEditMode}
               />
             </FormField>
           </FormRow>
@@ -137,8 +145,8 @@ export function ModalForm({
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" disabled={!form.userId}>
-              Cadastrar Voluntário
+            <Button type="submit" variant="primary" disabled={!form.userId || isSubmitting}>
+              {isEditMode ? 'Salvar Alterações' : 'Cadastrar Voluntário'}
             </Button>
           </ModalActions>
         </FormRoot>

@@ -24,6 +24,7 @@ export default function Resources() {
     setModalOpen,
     deleteModalOpen,
     setDeleteModalOpen,
+    isEditMode,
     resourceToDelete,
     setResourceToDelete,
     isDeleting,
@@ -32,6 +33,7 @@ export default function Resources() {
     filteredResources,
     handleInputChange,
     handleSubmit,
+    handleEdit,
     handleDeleteClick,
     handleDeleteConfirm,
   } = useResources()
@@ -80,7 +82,7 @@ export default function Resources() {
         <DataTable
           data={filteredResources}
           columns={columns}
-          onEdit={(row) => console.log('Edit', row)}
+          onEdit={handleEdit}
           onDelete={handleDeleteClick}
           emptyMessage="Nenhum recurso encontrado."
         />
@@ -109,6 +111,7 @@ export default function Resources() {
         onInputChange={handleInputChange}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
+        isEditMode={isEditMode}
       />
     </PageLayout>
   )

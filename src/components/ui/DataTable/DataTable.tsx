@@ -8,7 +8,7 @@ import styles from './DataTable.module.scss'
 
 export interface Column<T> {
   header: string
-  // eslint-disable-next-line no-unused-vars
+
   accessor: keyof T | ((row: T) => React.ReactNode)
   width?: string
   align?: 'left' | 'center' | 'right'
@@ -20,9 +20,9 @@ export type { PaginationConfig }
 interface DataTableProps<T> {
   data: T[]
   columns: Column<T>[]
-  // eslint-disable-next-line no-unused-vars
+
   onEdit?: (row: T, index: number) => void
-  // eslint-disable-next-line no-unused-vars
+
   onDelete?: (row: T, index: number) => void
   emptyMessage?: string
   pagination?: PaginationConfig
@@ -55,7 +55,7 @@ export function DataTable<T>({
                 <th
                   key={index}
                   style={{
-                    width: column.width,
+                    minWidth: column.width,
                     textAlign: column.headerAlign || 'left',
                   }}
                 >
@@ -65,7 +65,7 @@ export function DataTable<T>({
               {hasActions && (
                 <th
                   className={styles.actionsHeader}
-                  style={{ width: '149px' }}
+                  style={{ minWidth: '100px' }}
                 >
                   Ações
                 </th>

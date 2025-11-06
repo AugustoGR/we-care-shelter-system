@@ -1,1 +1,1 @@
-export { Autocomplete } from './Autocomplete'
+export { Autocomplete, type AutocompleteOption } from './Autocomplete'

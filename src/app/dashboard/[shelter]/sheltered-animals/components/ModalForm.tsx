@@ -43,6 +43,7 @@ interface ModalFormProps {
   onFileChange: (_file: File | null) => void
   onSubmit: (_event: React.FormEvent) => void
   isSaving?: boolean
+  isEditMode?: boolean
 }
 
 export function ModalForm({
@@ -54,16 +55,23 @@ export function ModalForm({
   onFileChange,
   onSubmit,
   isSaving = false,
+  isEditMode = false,
 }: ModalFormProps) {
   if (!isOpen) return null
 
   return (
     <ModalRoot onClose={onClose}>
-      <ModalHeader title="Registrar Novo Animal" onClose={onClose} />
+      <ModalHeader
+        title={isEditMode ? 'Editar Animal' : 'Registrar Novo Animal'}
+        onClose={onClose}
+      />
       <ModalContent>
         <FormRoot onSubmit={onSubmit}>
           <p className={styles.formDesc}>
-            Preencha os detalhes para adicionar um animal ao abrigo.
+            {isEditMode
+              ? 'Atualize os detalhes do animal.'
+              : 'Preencha os detalhes para adicionar um animal ao abrigo.'
+            }
           </p>
 
           <FormRow columns={1}>
@@ -201,7 +209,12 @@ export function ModalForm({
               Cancelar
             </Button>
             <Button type="submit" variant="primary" disabled={isSaving}>
-              {isSaving ? 'Salvando...' : 'Salvar Animal'}
+              {isSaving
+                ? 'Salvando...'
+                : isEditMode
+                  ? 'Salvar Alterações'
+                  : 'Salvar Animal'
+              }
             </Button>
           </ModalActions>
         </FormRoot>

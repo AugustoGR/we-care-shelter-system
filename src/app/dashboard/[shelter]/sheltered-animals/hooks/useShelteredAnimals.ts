@@ -12,6 +12,8 @@ export const useShelteredAnimals = () => {
   const shelterId = params.shelter as string
 
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [animalToEdit, setAnimalToEdit] = useState<Animal | null>(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [animalToDelete, setAnimalToDelete] = useState<Animal | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -63,6 +65,26 @@ export const useShelteredAnimals = () => {
     setForm({ ...form, [name]: value })
   }
 
+  const handleEdit = (animal: Animal) => {
+    setAnimalToEdit(animal)
+    setIsEditMode(true)
+    setForm({
+      name: animal.name,
+      species: animal.species,
+      breed: animal.breed || '',
+      age: animal.age?.toString() || '',
+      sex: animal.sex,
+      health: animal.health,
+      care: animal.care || '',
+      rabies: animal.rabies,
+      cinomose: animal.cinomose,
+      parvo: animal.parvo,
+      felina: animal.felina,
+      photo: null,
+    })
+    setIsModalOpen(true)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -75,8 +97,6 @@ export const useShelteredAnimals = () => {
       // Converter age para number se preenchido
       const age = form.age ? parseInt(form.age) : undefined
 
-      // Por enquanto, não vamos fazer upload de foto
-      // Você pode implementar isso posteriormente
       const animalData = {
         name: form.name,
         species: form.species,
@@ -89,23 +109,29 @@ export const useShelteredAnimals = () => {
         cinomose: form.cinomose,
         parvo: form.parvo,
         felina: form.felina,
-        status: form.health, // Status inicial baseado na saúde
+        status: form.health,
         shelterId,
       }
 
       console.log('Animal data to send:', animalData) // Debug
 
-      await animalsService.create(animalData)
+      if (isEditMode && animalToEdit) {
+        await animalsService.update(animalToEdit.id, animalData)
+      } else {
+        await animalsService.create(animalData)
+      }
 
       // Recarregar lista
       await loadAnimals()
 
       // Fechar modal e resetar form
       setIsModalOpen(false)
+      setIsEditMode(false)
+      setAnimalToEdit(null)
       setForm(INITIAL_FORM)
     } catch (err: any) {
-      console.error('Error creating animal:', err)
-      setError(err.response?.data?.message || 'Erro ao criar animal')
+      console.error('Error saving animal:', err)
+      setError(err.response?.data?.message || 'Erro ao salvar animal')
     } finally {
       setIsSaving(false)
     }
@@ -151,6 +177,8 @@ export const useShelteredAnimals = () => {
   return {
     isModalOpen,
     setIsModalOpen,
+    isEditMode,
+    animalToEdit,
     deleteModalOpen,
     setDeleteModalOpen,
     animalToDelete,
@@ -168,6 +196,7 @@ export const useShelteredAnimals = () => {
     filtered,
     animals,
     handleInputChange,
+    handleEdit,
     handleSubmit,
     handleDeleteClick,
     handleDeleteConfirm,

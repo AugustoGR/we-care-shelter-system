@@ -26,14 +26,17 @@ export default function VolunteersPage() {
     setModalOpen,
     deleteModalOpen,
     setDeleteModalOpen,
+    isEditMode,
     volunteerToDelete,
     setVolunteerToDelete,
     isDeleting,
+    isSubmitting,
     form,
     filtered,
     loading,
     handleInputChange,
     handleUserSelect,
+    handleEdit,
     handleSubmit,
     handleDeleteClick,
     handleDeleteConfirm,
@@ -112,7 +115,7 @@ export default function VolunteersPage() {
         <DataTable
           data={filtered}
           columns={columns}
-          onEdit={(row) => console.log('Edit', row)}
+          onEdit={handleEdit}
           onDelete={handleDeleteClick}
           emptyMessage="Nenhum voluntário encontrado."
         />
@@ -141,6 +144,8 @@ export default function VolunteersPage() {
         onInputChange={handleInputChange}
         onUserSelect={handleUserSelect}
         onSubmit={handleSubmit}
+        isEditMode={isEditMode}
+        isSubmitting={isSubmitting}
       />
     </PageLayout>
   )
