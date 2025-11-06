@@ -98,6 +98,25 @@
   }
 }
 
+.responsibleInfo,
+.associatedInfo {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5em;
+  color: #565d6d;
+  text-align: center;
+  margin-bottom: 16px;
+  padding: 8px;
+  background: #f9fafb;
+  border-radius: 6px;
+
+  strong {
+    color: #171a1f;
+    font-weight: 600;
+  }
+}
+
 .cardFooter {
   border-top: 1px solid #dee1e6;
   padding: 17px 0;

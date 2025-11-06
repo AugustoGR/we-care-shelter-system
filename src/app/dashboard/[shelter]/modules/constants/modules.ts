@@ -8,15 +8,8 @@ export interface Module {
 
 export const MODULES: Module[] = [
   {
-    key: 'shelters',
-    title: 'Cadastro de Abrigos',
-    desc: 'Gerencia o registro e os detalhes de todos os abrigos emergenciais, incluindo localização, capacidade e status de ativação.',
-    icon: '🏢',
-    active: true,
-  },
-  {
     key: 'people',
-    title: 'Gestão de Abrigaos',
+    title: 'Gestão de Abrigados',
     desc: 'Permite adicionar, editar e remover informações de pessoas abrigadas, acompanhando seu status e necessidades específicas.',
     icon: '👥',
     active: true,
@@ -43,24 +36,10 @@ export const MODULES: Module[] = [
     active: false,
   },
   {
-    key: 'notifications',
-    title: 'Sistema de Notificações',
-    desc: 'Envia alertas importantes sobre escassez de recursos, status de abrigos e atualizações críticas para a equipe.',
-    icon: '🔔',
-    active: true,
-  },
-  {
     key: 'reports',
     title: 'Geração de Relatórios',
     desc: 'Compila e apresenta dados sobre abrigados, voluntários e recursos em relatórios visuais e tabelas para análise.',
     icon: '📄',
     active: false,
-  },
-  {
-    key: 'management',
-    title: 'Gestão Interna',
-    desc: 'Administra permissões de usuários, atribuição de gestores de módulos e configurações gerais do sistema.',
-    icon: '⚙️',
-    active: true,
   },
 ]

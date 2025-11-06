@@ -1,0 +1,107 @@
+.section {
+  margin-bottom: 1.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.select {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #333;
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: #0078bd;
+    box-shadow: 0 0 0 3px rgba(0, 120, 189, 0.1);
+  }
+
+  &:hover {
+    border-color: #999;
+  }
+}
+
+.subtitle {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.volunteerList {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.5rem;
+  background-color: #f9f9f9;
+}
+
+.volunteerItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background-color: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    border-color: #0078bd;
+    background-color: #f0f8ff;
+  }
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #0078bd;
+}
+
+.volunteerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.volunteerName {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.volunteerPhone {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.emptyMessage {
+  text-align: center;
+  color: #999;
+  padding: 2rem;
+  font-size: 0.95rem;
+}
