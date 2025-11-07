@@ -6,13 +6,16 @@ import moment from 'moment'
 import { useParams } from 'next/navigation'
 
 import { ResourceProps } from '@/@types'
+import { useErrorHandler } from '@/hooks'
 import { resourcesService } from '@/services'
+import { SUCCESS_MESSAGES } from '@/utils/errorMessages'
 
 import { INITIAL_FORM } from '../constants/resources'
 
 export const useResources = () => {
   const params = useParams()
   const shelterId = params?.shelter as string
+  const { handleError, handleSuccess } = useErrorHandler()
 
   const [resources, setResources] = useState<ResourceProps[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -37,10 +40,11 @@ export const useResources = () => {
       setResources(data)
     } catch (error) {
       console.error('Error loading resources:', error)
+      handleError(error)
     } finally {
       setIsLoading(false)
     }
-  }, [shelterId])
+  }, [shelterId, handleError])
 
   useEffect(() => {
     if (shelterId) {
@@ -93,6 +97,7 @@ export const useResources = () => {
           ...form,
           quantidade,
         })
+        handleSuccess(SUCCESS_MESSAGES.UPDATED)
       } else {
         // Criar novo recurso
         await resourcesService.create({
@@ -100,6 +105,7 @@ export const useResources = () => {
           quantidade,
           shelterId,
         })
+        handleSuccess(SUCCESS_MESSAGES.CREATED)
       }
 
       setModalOpen(false)
@@ -109,6 +115,7 @@ export const useResources = () => {
       await loadResources()
     } catch (error) {
       console.error('Error saving resource:', error)
+      handleError(error)
     } finally {
       setIsSubmitting(false)
     }
@@ -125,9 +132,11 @@ export const useResources = () => {
     setIsDeleting(true)
     try {
       await resourcesService.remove(resourceToDelete.id)
+      handleSuccess(SUCCESS_MESSAGES.DELETED)
       await loadResources()
     } catch (error) {
       console.error('Error deleting resource:', error)
+      handleError(error)
     } finally {
       setIsDeleting(false)
       setDeleteModalOpen(false)

@@ -1,6 +1,8 @@
 'use client'
 import React from 'react'
 
+import { useParams } from 'next/navigation'
+
 import { VolunteerProps } from '@/@types/volunteerProps'
 import { FilterBar } from '@/components/layout/FilterBar'
 import { PageLayout } from '@/components/layout/PageLayout'
@@ -9,6 +11,7 @@ import { ConfirmationModal } from '@/components/ui/ConfirmationModal'
 import { DataTable, Column } from '@/components/ui/DataTable'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { usePermissions, useShelterPermissions } from '@/hooks'
 import { formatDistanceToNow } from '@/utils/formatters'
 
 import { ModalForm } from './components/ModalForm'
@@ -17,6 +20,13 @@ import { useVolunteers } from './hooks/useVolunteers'
 import styles from './Volunteers.module.scss'
 
 export default function VolunteersPage() {
+  const params = useParams()
+  const shelterId = params.shelter as string
+  const { modules: permissionModules, isAdmin } = useShelterPermissions(shelterId)
+  const { canWriteInModule } = usePermissions()
+
+  // Admin pode editar tudo, caso contrário verifica permissão no módulo
+  const userCanWrite = isAdmin || canWriteInModule('volunteers', permissionModules)
   const {
     search,
     setSearch,
@@ -89,9 +99,25 @@ export default function VolunteersPage() {
     <PageLayout
       title="Gestão de Voluntários"
       subtitle="Visualize e gerencie todos os voluntários cadastrados."
-      onAdd={() => setModalOpen(true)}
+      onAdd={userCanWrite ? () => setModalOpen(true) : undefined}
       addButtonText="Adicionar Voluntário"
     >
+      {!userCanWrite && (
+        <div
+          style={{
+            padding: '12px',
+            marginBottom: '16px',
+            backgroundColor: '#FFF8E1',
+            border: '1px solid #FFD54F',
+            borderRadius: '8px',
+            color: '#F57F17',
+          }}
+        >
+          ⚠️ Você não tem permissão para editar voluntários. Apenas
+          visualização permitida.
+        </div>
+      )}
+
       <FilterBar
         searchValue={search}
         searchPlaceholder="Buscar voluntário..."
@@ -115,8 +141,8 @@ export default function VolunteersPage() {
         <DataTable
           data={filtered}
           columns={columns}
-          onEdit={handleEdit}
-          onDelete={handleDeleteClick}
+          onEdit={userCanWrite ? handleEdit : undefined}
+          onDelete={userCanWrite ? handleDeleteClick : undefined}
           emptyMessage="Nenhum voluntário encontrado."
         />
       </TableCard>

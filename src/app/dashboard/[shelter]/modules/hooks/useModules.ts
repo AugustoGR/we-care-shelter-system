@@ -60,8 +60,13 @@ export const useModules = () => {
         // Recarregar módulos para sincronizar
         await loadModules()
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao alternar módulo:', error)
+
+      // Se for erro 403, lançar para ser tratado pelo componente
+      if (error.response?.status === 403) {
+        throw error
+      }
     }
   }
 

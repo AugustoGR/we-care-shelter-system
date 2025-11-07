@@ -10,7 +10,9 @@ import {
   CreateShelteredPersonData,
   UpdateShelteredPersonData,
 } from '@/@types/shelteredPersonProps'
+import { useErrorHandler } from '@/hooks'
 import { shelteredPeopleService } from '@/services'
+import { getErrorMessage, SUCCESS_MESSAGES } from '@/utils/errorMessages'
 
 import {
   INITIAL_FORM,
@@ -24,6 +26,7 @@ type FormData = Omit<CreateShelteredPersonData, 'shelterId'>
 export const useSheltered = () => {
   const params = useParams()
   const shelterId = params.shelter as string
+  const { handleError, handleSuccess } = useErrorHandler()
 
   const [sheltered, setSheltered] = useState<ShelteredPerson[]>([])
   const [filteredSheltered, setFilteredSheltered] = useState<ShelteredPerson[]>(
@@ -61,11 +64,13 @@ export const useSheltered = () => {
       setFilteredSheltered(data)
     } catch (err) {
       console.error('Erro ao carregar abrigados:', err)
-      setError('Erro ao carregar abrigados. Tente novamente.')
+      const errorMsg = getErrorMessage(err)
+      setError(errorMsg)
+      handleError(err)
     } finally {
       setIsLoading(false)
     }
-  }, [shelterId])
+  }, [shelterId, handleError])
 
   /**
    * Carregar dados ao montar o componente
@@ -179,12 +184,15 @@ export const useSheltered = () => {
       setIsSaving(true)
       setError(null)
       await shelteredPeopleService.delete(selectedSheltered.id)
+      handleSuccess(SUCCESS_MESSAGES.DELETED)
       await loadSheltered()
       setIsDeleteModalOpen(false)
       setSelectedSheltered(null)
     } catch (err) {
       console.error('Erro ao deletar abrigado:', err)
-      setError('Erro ao deletar abrigado. Tente novamente.')
+      const errorMsg = getErrorMessage(err)
+      setError(errorMsg)
+      handleError(err)
     } finally {
       setIsSaving(false)
     }
@@ -214,6 +222,7 @@ export const useSheltered = () => {
           ...formData,
         }
         await shelteredPeopleService.update(selectedSheltered.id, updateData)
+        handleSuccess(SUCCESS_MESSAGES.UPDATED)
       } else {
         // Criar novo abrigado
         const createData: CreateShelteredPersonData = {
@@ -221,6 +230,7 @@ export const useSheltered = () => {
           shelterId,
         }
         await shelteredPeopleService.create(createData)
+        handleSuccess(SUCCESS_MESSAGES.CREATED)
       }
 
       await loadSheltered()
@@ -229,7 +239,9 @@ export const useSheltered = () => {
       setSelectedSheltered(null)
     } catch (err) {
       console.error('Erro ao salvar abrigado:', err)
-      setError('Erro ao salvar abrigado. Verifique os dados e tente novamente.')
+      const errorMsg = getErrorMessage(err)
+      setError(errorMsg)
+      handleError(err)
     } finally {
       setIsSaving(false)
     }

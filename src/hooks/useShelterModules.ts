@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 
 import type { ShelterModuleProps } from '@/@types'
 import { shelterModulesService } from '@/services/http/shelterModulesService'
+import { getErrorMessage } from '@/utils/errorMessages'
 
 export const useShelterModules = (shelterId: string | null) => {
   const [modules, setModules] = useState<ShelterModuleProps[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!shelterId) {
@@ -17,10 +19,12 @@ export const useShelterModules = (shelterId: string | null) => {
     const loadModules = async () => {
       try {
         setLoading(true)
+        setError(null)
         const data = await shelterModulesService.getAll(shelterId)
         setModules(data)
-      } catch (error) {
-        console.error('Erro ao carregar módulos:', error)
+      } catch (err) {
+        console.error('Erro ao carregar módulos:', err)
+        setError(getErrorMessage(err))
         setModules([])
       } finally {
         setLoading(false)
@@ -38,6 +42,7 @@ export const useShelterModules = (shelterId: string | null) => {
   return {
     modules,
     loading,
+    error,
     isModuleActive,
   }
 }

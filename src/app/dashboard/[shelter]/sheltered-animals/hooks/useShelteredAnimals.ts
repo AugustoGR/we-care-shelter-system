@@ -3,13 +3,16 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 
 import { Animal } from '@/@types/animalProps'
+import { useErrorHandler } from '@/hooks'
 import { animalsService } from '@/services'
+import { getErrorMessage, SUCCESS_MESSAGES } from '@/utils/errorMessages'
 
 import { INITIAL_FORM } from '../constants/animals'
 
 export const useShelteredAnimals = () => {
   const params = useParams()
   const shelterId = params.shelter as string
+  const { handleError, handleSuccess } = useErrorHandler()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -36,11 +39,13 @@ export const useShelteredAnimals = () => {
       setAnimals(data)
     } catch (err: any) {
       console.error('Error loading animals:', err)
-      setError(err.response?.data?.message || 'Erro ao carregar animais')
+      const errorMsg = getErrorMessage(err)
+      setError(errorMsg)
+      handleError(err)
     } finally {
       setIsLoading(false)
     }
-  }, [shelterId])
+  }, [shelterId, handleError])
 
   useEffect(() => {
     loadAnimals()
@@ -117,8 +122,10 @@ export const useShelteredAnimals = () => {
 
       if (isEditMode && animalToEdit) {
         await animalsService.update(animalToEdit.id, animalData)
+        handleSuccess(SUCCESS_MESSAGES.UPDATED)
       } else {
         await animalsService.create(animalData)
+        handleSuccess(SUCCESS_MESSAGES.CREATED)
       }
 
       // Recarregar lista
@@ -131,7 +138,9 @@ export const useShelteredAnimals = () => {
       setForm(INITIAL_FORM)
     } catch (err: any) {
       console.error('Error saving animal:', err)
-      setError(err.response?.data?.message || 'Erro ao salvar animal')
+      const errorMsg = getErrorMessage(err)
+      setError(errorMsg)
+      handleError(err)
     } finally {
       setIsSaving(false)
     }
@@ -148,12 +157,15 @@ export const useShelteredAnimals = () => {
     setIsDeleting(true)
     try {
       await animalsService.delete(animalToDelete.id)
+      handleSuccess(SUCCESS_MESSAGES.DELETED)
 
       // Recarregar lista
       await loadAnimals()
     } catch (err: any) {
       console.error('Error deleting animal:', err)
-      setError(err.response?.data?.message || 'Erro ao deletar animal')
+      const errorMsg = getErrorMessage(err)
+      setError(errorMsg)
+      handleError(err)
     } finally {
       setIsDeleting(false)
       setDeleteModalOpen(false)

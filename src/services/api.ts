@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+import { ERROR_MESSAGES } from '@/utils/errorMessages'
+
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
 })
@@ -39,6 +41,16 @@ api.interceptors.response.use(
         }
       }
     }
+
+    // Adiciona mensagem de erro padronizada ao objeto de erro
+    if (!error.response) {
+      error.message = ERROR_MESSAGES.GENERAL.NETWORK_ERROR
+    } else if (error.response?.status === 403) {
+      error.message = error.response?.data?.message || ERROR_MESSAGES.PERMISSION.INSUFFICIENT_PERMISSION
+    } else if (error.response?.status === 401) {
+      error.message = ERROR_MESSAGES.AUTH.SESSION_EXPIRED
+    }
+
     return Promise.reject(error)
   },
 )

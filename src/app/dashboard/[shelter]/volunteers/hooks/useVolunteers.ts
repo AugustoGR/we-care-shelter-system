@@ -3,13 +3,16 @@ import { useState, useEffect, useCallback, ChangeEvent, FormEvent } from 'react'
 import { useParams } from 'next/navigation'
 
 import { VolunteerProps } from '@/@types/volunteerProps'
+import { useErrorHandler } from '@/hooks'
 import { volunteersService } from '@/services'
+import { SUCCESS_MESSAGES } from '@/utils/errorMessages'
 
 import { INITIAL_FORM } from '../constants/volunteers'
 
 export const useVolunteers = () => {
   const params = useParams()
   const shelterId = params?.shelter as string
+  const { handleError, handleSuccess } = useErrorHandler()
 
   const [volunteers, setVolunteers] = useState<VolunteerProps[]>([])
   const [loading, setLoading] = useState(true)
@@ -33,10 +36,11 @@ export const useVolunteers = () => {
       setVolunteers(data)
     } catch (error) {
       console.error('Error loading volunteers:', error)
+      handleError(error)
     } finally {
       setLoading(false)
     }
-  }, [shelterId])
+  }, [shelterId, handleError])
 
   useEffect(() => {
     if (shelterId) {
@@ -96,6 +100,7 @@ export const useVolunteers = () => {
           skills,
           status: form.status,
         })
+        handleSuccess(SUCCESS_MESSAGES.UPDATED)
       } else {
         // Criar novo voluntário
         await volunteersService.create({
@@ -105,6 +110,7 @@ export const useVolunteers = () => {
           status: form.status,
           shelterId,
         })
+        handleSuccess(SUCCESS_MESSAGES.CREATED)
       }
 
       setModalOpen(false)
@@ -114,6 +120,7 @@ export const useVolunteers = () => {
       await loadVolunteers()
     } catch (error) {
       console.error('Error saving volunteer:', error)
+      handleError(error)
     } finally {
       setIsSubmitting(false)
     }
@@ -130,9 +137,11 @@ export const useVolunteers = () => {
     setIsDeleting(true)
     try {
       await volunteersService.remove(volunteerToDelete.id)
+      handleSuccess(SUCCESS_MESSAGES.DELETED)
       await loadVolunteers()
     } catch (error) {
       console.error('Error deleting volunteer:', error)
+      handleError(error)
     } finally {
       setIsDeleting(false)
       setDeleteModalOpen(false)

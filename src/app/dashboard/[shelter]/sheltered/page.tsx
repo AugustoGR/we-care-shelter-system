@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 
+import { useParams } from 'next/navigation'
+
 import { FilterBar } from '@/components/layout/FilterBar'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { TableCard } from '@/components/layout/TableCard'
@@ -9,6 +11,7 @@ import { ConfirmationModal } from '@/components/ui/ConfirmationModal'
 import { DataTable, Column } from '@/components/ui/DataTable'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { usePermissions, useShelterPermissions } from '@/hooks'
 
 import { ModalForm } from './components/ModalForm'
 import {
@@ -19,6 +22,10 @@ import {
 import { useSheltered } from './hooks/useSheltered'
 
 export default function Sheltered() {
+  const params = useParams()
+  const shelterId = params.shelter as string
+  const { modules: permissionModules, isAdmin } = useShelterPermissions(shelterId)
+  const { canWriteInModule } = usePermissions()
   const {
     sheltered,
     formData,
@@ -52,6 +59,9 @@ export default function Sheltered() {
 
   const [currentPage, setCurrentPage] = useState(1)
 
+  // Admin pode editar tudo, caso contrário verifica permissão no módulo
+  const userCanWrite = isAdmin || canWriteInModule('people', permissionModules)
+
   // Paginação
   const startIndex = (currentPage - 1) * PAGE_SIZE
   const endIndex = startIndex + PAGE_SIZE
@@ -82,7 +92,7 @@ export default function Sheltered() {
     <PageLayout
       title="Gestão de Abrigados"
       subtitle="Visualize e gerencie todos os indivíduos abrigados."
-      onAdd={handleAdd}
+      onAdd={userCanWrite ? handleAdd : undefined}
       addButtonText="Adicionar Novo Abrigado"
     >
       {error && (
@@ -97,6 +107,22 @@ export default function Sheltered() {
           }}
         >
           {error}
+        </div>
+      )}
+
+      {!userCanWrite && (
+        <div
+          style={{
+            padding: '12px',
+            marginBottom: '16px',
+            backgroundColor: '#FFF8E1',
+            border: '1px solid #FFD54F',
+            borderRadius: '8px',
+            color: '#F57F17',
+          }}
+        >
+          ⚠️ Você não tem permissão para editar abrigados. Apenas
+          visualização permitida.
         </div>
       )}
 
@@ -144,8 +170,8 @@ export default function Sheltered() {
           <DataTable
             data={paginatedData}
             columns={columns}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+            onEdit={userCanWrite ? handleEdit : undefined}
+            onDelete={userCanWrite ? handleDelete : undefined}
             emptyMessage="Nenhum abrigado encontrado."
             pagination={{
               currentPage,

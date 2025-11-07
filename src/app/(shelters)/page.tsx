@@ -7,12 +7,14 @@ import { Header } from '@/components/layout/Header/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { LinkButton } from '@/components/ui/link-button'
+import { useAuth } from '@/contexts/AuthContext'
 import { getShelterStatusConfig } from '@/utils/formatters'
 
 import { useShelters } from './hooks/useShelters'
 import styles from './Shelters.module.scss'
 
 export default function Shelters() {
+  const { user } = useAuth()
   const {
     loading,
     searchTerm,
@@ -27,7 +29,7 @@ export default function Shelters() {
       <Header />
       <main className={styles.main}>
         <div className={styles.headerRow}>
-          <h1 className={styles.title}>Meus Abrigos</h1>
+          <h1 className={styles.title}>Abrigos</h1>
           <LinkButton
             href="/new-shelter"
             variant="default"
@@ -66,16 +68,22 @@ export default function Shelters() {
           <div className={styles.emptyMessage}>
             {searchTerm
               ? 'Nenhum abrigo encontrado com esse termo de busca.'
-              : 'Você ainda não cadastrou nenhum abrigo. Clique em "Adicionar Novo Abrigo" para começar.'}
+              : 'Nenhum abrigo disponível no momento. Clique em "Adicionar Novo Abrigo" para criar o primeiro.'}
           </div>
         ) : (
           <div className={styles.sheltersGrid}>
             {filteredShelters.map((shelter) => {
               const { status, tagBg, tagText, tagBorder } =
                 getShelterStatusConfig(shelter.active)
+              const isOwner = user && shelter.ownerId === user.id
               return (
                 <div className={styles.card} key={shelter.id}>
-                  <div className={styles.cardTitle}>{shelter.name}</div>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardTitle}>{shelter.name}</div>
+                    {isOwner && (
+                      <span className={styles.ownerBadge}>Proprietário</span>
+                    )}
+                  </div>
                   <div className={styles.cardCalamity}>
                     Tipo de Calamidade: {shelter.calamity}
                   </div>
@@ -93,7 +101,7 @@ export default function Shelters() {
                     </span>
                   </div>
                   <LinkButton
-                    className='ml-auto'
+                    className="ml-auto"
                     href={`/dashboard/${shelter.id}/modules`}
                     variant="outline"
                   >

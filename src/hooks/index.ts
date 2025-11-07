@@ -1,2 +1,5 @@
 export { useProtectedRoute } from './useProtectedRoute'
 export { useMyShelters, useAllShelters, useShelter } from './useShelters'
+export { usePermissions } from './usePermissions'
+export { useShelterPermissions } from './useShelterPermissions'
+export { useErrorHandler } from './useErrorHandler'

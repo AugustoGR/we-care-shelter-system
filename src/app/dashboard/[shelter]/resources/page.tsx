@@ -1,6 +1,8 @@
 'use client'
 import React from 'react'
 
+import { useParams } from 'next/navigation'
+
 import { ResourceProps } from '@/@types'
 import { FilterBar } from '@/components/layout/FilterBar'
 import { PageLayout } from '@/components/layout/PageLayout'
@@ -9,12 +11,20 @@ import { ConfirmationModal } from '@/components/ui/ConfirmationModal'
 import { DataTable, Column } from '@/components/ui/DataTable'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { usePermissions, useShelterPermissions } from '@/hooks'
 
 import { ModalForm } from './components/ModalForm'
 import { CATEGORIAS, COLUMNS } from './constants/resources'
 import { useResources } from './hooks/useResources'
 
 export default function Resources() {
+  const params = useParams()
+  const shelterId = params.shelter as string
+  const { modules: permissionModules, isAdmin } = useShelterPermissions(shelterId)
+  const { canWriteInModule } = usePermissions()
+
+  // Admin pode editar tudo, caso contrário verifica permissão no módulo
+  const userCanWrite = isAdmin || canWriteInModule('resources', permissionModules)
   const {
     search,
     setSearch,
@@ -53,9 +63,25 @@ export default function Resources() {
     <PageLayout
       title="Gerenciamento de Recursos"
       subtitle="Gerencie o inventário de recursos e controle de estoque."
-      onAdd={() => setModalOpen(true)}
+      onAdd={userCanWrite ? () => setModalOpen(true) : undefined}
       addButtonText="Adicionar Recurso"
     >
+      {!userCanWrite && (
+        <div
+          style={{
+            padding: '12px',
+            marginBottom: '16px',
+            backgroundColor: '#FFF8E1',
+            border: '1px solid #FFD54F',
+            borderRadius: '8px',
+            color: '#F57F17',
+          }}
+        >
+          ⚠️ Você não tem permissão para editar recursos. Apenas visualização
+          permitida.
+        </div>
+      )}
+
       <FilterBar
         searchValue={search}
         searchPlaceholder="Buscar recurso..."
@@ -82,8 +108,8 @@ export default function Resources() {
         <DataTable
           data={filteredResources}
           columns={columns}
-          onEdit={handleEdit}
-          onDelete={handleDeleteClick}
+          onEdit={userCanWrite ? handleEdit : undefined}
+          onDelete={userCanWrite ? handleDeleteClick : undefined}
           emptyMessage="Nenhum recurso encontrado."
         />
       </TableCard>

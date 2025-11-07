@@ -77,6 +77,14 @@
 	gap: 8px;
 }
 
+.cardHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-bottom: 4px;
+}
+
 .cardTitle {
 	font-family: Inter, sans-serif;
 	font-weight: 500;
@@ -84,6 +92,31 @@
 	line-height: 1.4em;
 	letter-spacing: -0.025em;
 	color: #171A1F;
+}
+
+.ownerBadge,
+.volunteerBadge {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 8px;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 11px;
+	line-height: 1.5;
+	font-weight: 600;
+	border-radius: 10px;
+	white-space: nowrap;
+}
+
+.ownerBadge {
+	background: #E8F4FD;
+	color: #0079BF;
+	border: 1px solid #B3D9F2;
+}
+
+.volunteerBadge {
+	background: #FFF4E5;
+	color: #E87525;
+	border: 1px solid #FFD8A8;
 }
 
 .cardCalamity {

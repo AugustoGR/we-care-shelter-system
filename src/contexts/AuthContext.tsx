@@ -95,6 +95,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   )
 }
 
+export { AuthContext }
+
 export function useAuth() {
   const context = useContext(AuthContext)
 

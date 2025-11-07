@@ -1,6 +1,8 @@
 'use client'
 import React from 'react'
 
+import { useParams } from 'next/navigation'
+
 import { FilterBar } from '@/components/layout/FilterBar'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { TableCard } from '@/components/layout/TableCard'
@@ -8,6 +10,7 @@ import { ConfirmationModal } from '@/components/ui/ConfirmationModal'
 import { DataTable, Column } from '@/components/ui/DataTable'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { usePermissions, useShelterPermissions } from '@/hooks'
 
 import { ModalForm } from './components/ModalForm'
 import { type Animal, SPECIES_OPTIONS, COLUMNS } from './constants/animals'
@@ -15,6 +18,13 @@ import { useShelteredAnimals } from './hooks/useShelteredAnimals'
 import styles from './ShelteredAnimals.module.scss'
 
 export default function ShelteredAnimalsPage() {
+  const params = useParams()
+  const shelterId = params.shelter as string
+  const { modules: permissionModules, isAdmin } = useShelterPermissions(shelterId)
+  const { canWriteInModule } = usePermissions()
+
+  // Admin pode editar tudo, caso contrário verifica permissão no módulo
+  const userCanWrite = isAdmin || canWriteInModule('animals', permissionModules)
   const {
     isModalOpen,
     setIsModalOpen,
@@ -76,7 +86,7 @@ export default function ShelteredAnimalsPage() {
     <PageLayout
       title="Gerenciamento de Animais"
       subtitle="Lista completa de animais abrigados e seus status."
-      onAdd={() => setIsModalOpen(true)}
+      onAdd={userCanWrite ? () => setIsModalOpen(true) : undefined}
       addButtonText="Adicionar Animal"
     >
       {error && (
@@ -90,6 +100,22 @@ export default function ShelteredAnimalsPage() {
           }}
         >
           {error}
+        </div>
+      )}
+
+      {!userCanWrite && (
+        <div
+          style={{
+            padding: '12px',
+            marginBottom: '16px',
+            backgroundColor: '#FFF8E1',
+            border: '1px solid #FFD54F',
+            borderRadius: '8px',
+            color: '#F57F17',
+          }}
+        >
+          ⚠️ Você não tem permissão para editar animais. Apenas visualização
+          permitida.
         </div>
       )}
 
@@ -120,8 +146,8 @@ export default function ShelteredAnimalsPage() {
           <DataTable
             data={filtered}
             columns={columns}
-            onEdit={handleEdit}
-            onDelete={handleDeleteClick}
+            onEdit={userCanWrite ? handleEdit : undefined}
+            onDelete={userCanWrite ? handleDeleteClick : undefined}
             emptyMessage="Nenhum animal encontrado."
           />
         )}

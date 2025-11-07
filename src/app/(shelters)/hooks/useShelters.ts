@@ -17,7 +17,7 @@ export const useShelters = () => {
     try {
       setLoading(true)
       setError(null)
-      const data = await sheltersService.findMyOwnedShelters()
+      const data = await sheltersService.findAll()
       setShelters(data)
     } catch (err: any) {
       console.error('Erro ao carregar abrigos:', err)

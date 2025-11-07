@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 
 import { Shelter, ShelterFilters } from '@/@types/shelterProps'
 import { sheltersService } from '@/services'
+import { getErrorMessage } from '@/utils/errorMessages'
 
 interface UseSheltersReturn {
   shelters: Shelter[]
@@ -23,11 +24,11 @@ export function useMyShelters(): UseSheltersReturn {
     try {
       setLoading(true)
       setError(null)
-      const data = await sheltersService.findMyOwnedShelters()
+      const data = await sheltersService.findMyShelters()
       setShelters(data)
     } catch (err: any) {
       console.error('Erro ao carregar abrigos:', err)
-      setError(err?.response?.data?.message || 'Erro ao carregar abrigos')
+      setError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -48,7 +49,6 @@ export function useMyShelters(): UseSheltersReturn {
 
 interface UseAllSheltersReturn extends UseSheltersReturn {
   filters: ShelterFilters
-  // eslint-disable-next-line no-unused-vars
   updateFilters: (newFilters: ShelterFilters) => void
 }
 
@@ -71,7 +71,7 @@ export function useAllShelters(
       setShelters(data)
     } catch (err: any) {
       console.error('Erro ao carregar abrigos:', err)
-      setError(err?.response?.data?.message || 'Erro ao carregar abrigos')
+      setError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -113,7 +113,7 @@ export function useShelter(id: string | null) {
       setShelter(data)
     } catch (err: any) {
       console.error('Erro ao carregar abrigo:', err)
-      setError(err?.response?.data?.message || 'Erro ao carregar abrigo')
+      setError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }

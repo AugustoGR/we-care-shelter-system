@@ -6,8 +6,11 @@ import { useParams } from 'next/navigation'
 import type { VolunteerProps } from '@/@types/volunteerProps'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { useAuth } from '@/contexts/AuthContext'
+import { useErrorHandler, usePermissions, useShelterPermissions } from '@/hooks'
 import { shelterModulesService } from '@/services/http/shelterModulesService'
 import { volunteersService } from '@/services/http/volunteers.service'
+import { SUCCESS_MESSAGES } from '@/utils/errorMessages'
 
 import { ModalForm } from './components/ModalForm'
 import { useModules } from './hooks/useModules'
@@ -16,6 +19,15 @@ import styles from './Modules.module.scss'
 export default function ModulesPage() {
   const params = useParams()
   const shelterId = params.shelter as string
+  const { user } = useAuth()
+  const { handleError, handleSuccess } = useErrorHandler()
+  const {
+    canManageModuleActivation,
+    isAdmin,
+    modules: permissionModules,
+    isLoading: permissionsLoading,
+  } = useShelterPermissions(shelterId)
+  const { canManageModule } = usePermissions()
 
   const { modules, moduleStates, handleToggle, getModuleData, reloadModules } =
     useModules()
@@ -34,8 +46,9 @@ export default function ModulesPage() {
       setVolunteers(data)
     } catch (error) {
       console.error('Erro ao carregar voluntários:', error)
+      handleError(error)
     }
-  }, [shelterId])
+  }, [shelterId, handleError])
 
   useEffect(() => {
     loadVolunteers()
@@ -70,9 +83,28 @@ export default function ModulesPage() {
       }
 
       await reloadModules()
+      handleSuccess(SUCCESS_MESSAGES.UPDATED)
     } catch (error) {
       console.error('Erro ao salvar módulo:', error)
+      handleError(error)
       throw error
+    }
+  }
+
+  const handleToggleWithPermissionCheck = async (key: string) => {
+    try {
+      await handleToggle(key)
+    } catch (error: any) {
+      // Trata especificamente erro 403 de permissão
+      if (error.response?.status === 403) {
+        handleError(
+          new Error(
+            'Você não tem permissão para ativar/desativar módulos. Apenas administradores do abrigo podem realizar esta ação.',
+          ),
+        )
+      } else {
+        handleError(error)
+      }
     }
   }
 
@@ -84,9 +116,28 @@ export default function ModulesPage() {
         Abrigo Emergencial. Cada módulo pode ser ligado ou desligado para
         adaptar as funcionalidades do abrigo conforme necessário.
       </p>
+      {!permissionsLoading && !canManageModuleActivation && (
+        <div className={styles.permissionWarning}>
+          <p>
+            ⚠️ Você não tem permissão para ativar/desativar módulos. Apenas
+            administradores do abrigo podem realizar esta ação.
+          </p>
+        </div>
+      )}
       <div className={styles.grid}>
         {modules.map((mod) => {
           const moduleData = getModuleData(mod.key)
+          const userIsResponsible =
+            moduleData?.responsibleVolunteer?.user?.id === user?.id
+          const userCanManage = canManageModule(mod.key, permissionModules)
+
+          // Mostra o card apenas se:
+          // 1. Usuário é admin
+          // 2. Usuário é responsável por este módulo
+          // 3. Usuário está associado a este módulo
+          if (!isAdmin && !userCanManage && !userIsResponsible) {
+            return null
+          }
 
           return (
             <div key={mod.key} className={styles.card}>
@@ -114,27 +165,52 @@ export default function ModulesPage() {
                 ) : null}
 
               <div className={styles.cardFooter}>
-                <div className={styles.statusWrapper}>
-                  <Switch
-                    checked={moduleStates[mod.key]}
-                    onCheckedChange={() => handleToggle(mod.key)}
-                  />
-                  <span
-                    className={
-                      moduleStates[mod.key]
-                        ? styles.statusTextActive
-                        : styles.statusTextInactive
-                    }
+                {/* Switch de ativação - apenas para admins */}
+                {canManageModuleActivation && (
+                  <div className={styles.statusWrapper}>
+                    <Switch
+                      checked={moduleStates[mod.key]}
+                      onCheckedChange={() =>
+                        handleToggleWithPermissionCheck(mod.key)
+                      }
+                      disabled={permissionsLoading}
+                    />
+                    <span
+                      className={
+                        moduleStates[mod.key]
+                          ? styles.statusTextActive
+                          : styles.statusTextInactive
+                      }
+                    >
+                      {moduleStates[mod.key] ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Status para não-admins */}
+                {!canManageModuleActivation && (
+                  <div className={styles.statusWrapper}>
+                    <span
+                      className={
+                        moduleStates[mod.key]
+                          ? styles.statusTextActive
+                          : styles.statusTextInactive
+                      }
+                    >
+                      {moduleStates[mod.key] ? '✓ Ativo' : '✗ Inativo'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Botão gerenciar - apenas para responsáveis e admins */}
+                {(isAdmin || userIsResponsible) && (
+                  <Button
+                    className={styles.manageBtn}
+                    onClick={() => handleManageClick(mod)}
                   >
-                    {moduleStates[mod.key] ? 'Ativo' : 'Inativo'}
-                  </span>
-                </div>
-                <Button
-                  className={styles.manageBtn}
-                  onClick={() => handleManageClick(mod)}
-                >
-                  Gerenciar
-                </Button>
+                    Gerenciar
+                  </Button>
+                )}
               </div>
             </div>
           )

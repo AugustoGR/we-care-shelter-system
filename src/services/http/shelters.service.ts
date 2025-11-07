@@ -45,9 +45,9 @@ export const sheltersService = {
   },
 
   /**
-   * Listar meus abrigos (onde sou proprietário)
+   * Listar todos os meus abrigos (proprietário + voluntário)
    */
-  async findMyOwnedShelters(): Promise<Shelter[]> {
+  async findMyShelters(): Promise<Shelter[]> {
     const response = await api.get<Shelter[]>('/shelters/my-shelters')
     return response.data
   },
@@ -73,5 +73,17 @@ export const sheltersService = {
    */
   async delete(id: string): Promise<void> {
     await api.delete(`/shelters/${id}`)
+  },
+
+  /**
+   * Obter o role do usuário no abrigo
+   */
+  async getUserRole(
+    shelterId: string,
+  ): Promise<{ role: string; isAdmin: boolean }> {
+    const response = await api.get<{ role: string; isAdmin: boolean }>(
+      `/shelters/${shelterId}/user-role`,
+    )
+    return response.data
   },
 }

@@ -1,3 +1,5 @@
+import { UserRole } from '@/@types/userProps'
+
 import { api } from '../api'
 
 export interface LoginCredentials {
@@ -17,6 +19,7 @@ export interface AuthResponse {
     id: string
     email: string
     name: string
+    role: UserRole
     createdAt: string
     updatedAt: string
   }
