@@ -23,13 +23,25 @@
   }
 }
 
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .pageTitle {
   font-family: 'Open Sans', sans-serif;
   font-size: 30px;
   font-weight: 700;
   line-height: 1.2em;
   color: #171a1f;
-  margin-bottom: 8px;
+  margin: 0;
   letter-spacing: -0.5px;
 }
 

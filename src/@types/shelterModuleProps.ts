@@ -38,6 +38,6 @@ export interface CreateShelterModuleDto {
 
 export interface UpdateShelterModuleDto {
   active?: boolean
-  responsibleVolunteerId?: string
+  responsibleVolunteerId?: string | null
   associatedVolunteerIds?: string[]
 }

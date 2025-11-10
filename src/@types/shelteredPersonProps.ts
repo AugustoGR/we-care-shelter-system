@@ -5,6 +5,7 @@ export interface ShelteredPerson {
   dataNascimento: string // ISO date string from API
   genero: string
   status: string
+  active: boolean
   shelterId: string
   shelter?: {
     id: string

@@ -1,1 +1,24 @@
-// Resources - Estilos específicos
+.noPermissionBanner {
+  padding: 12px;
+  margin-bottom: 16px;
+  background-color: #fff8e1;
+  border: 1px solid #ffd54f;
+  border-radius: 8px;
+  color: #f57f17;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    padding: 10px;
+  }
+}
+
+.actionButtons {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

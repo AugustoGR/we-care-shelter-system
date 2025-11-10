@@ -11,7 +11,7 @@ import { FormField, FormRow, FormRoot } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 
-import { GENERO_OPTIONS, STATUS_OPTIONS } from '../constants/sheltered'
+import { GENERO_OPTIONS, STATUS_OPTIONS } from '../../constants/sheltered'
 
 interface ModalFormProps {
   isOpen: boolean

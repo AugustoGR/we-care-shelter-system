@@ -14,8 +14,8 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 
-import { SEX_OPTIONS, HEALTH_OPTIONS } from '../constants/animals'
-import styles from '../ShelteredAnimals.module.scss'
+import { SEX_OPTIONS, HEALTH_OPTIONS } from '../../constants/animals'
+import styles from '../../ShelteredAnimals.module.scss'
 
 interface ModalFormProps {
   isOpen: boolean

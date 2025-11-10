@@ -11,7 +11,32 @@ export const animalsService = {
   /**
    * Criar um novo animal
    */
-  async create(data: CreateAnimalData): Promise<Animal> {
+  async create(data: CreateAnimalData, photo?: File): Promise<Animal> {
+    if (photo) {
+      const formData = new FormData()
+      formData.append('photo', photo)
+
+      // Adicionar campos ao FormData
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          // Converter booleanos para string 'true'/'false'
+          if (typeof value === 'boolean') {
+            formData.append(key, value ? 'true' : 'false')
+          } else {
+            formData.append(key, value.toString())
+          }
+        }
+      })
+
+      const response = await api.post<Animal>(
+        `/animals?shelterId=${data.shelterId}`,
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        },
+      )
+      return response.data
+    }
     const response = await api.post<Animal>('/animals', data)
     return response.data
   },
@@ -44,7 +69,28 @@ export const animalsService = {
   /**
    * Atualizar um animal
    */
-  async update(id: string, data: UpdateAnimalData): Promise<Animal> {
+  async update(id: string, data: UpdateAnimalData, photo?: File): Promise<Animal> {
+    if (photo) {
+      const formData = new FormData()
+      formData.append('photo', photo)
+
+      // Adicionar campos ao FormData
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          // Converter booleanos para string 'true'/'false'
+          if (typeof value === 'boolean') {
+            formData.append(key, value ? 'true' : 'false')
+          } else {
+            formData.append(key, value.toString())
+          }
+        }
+      })
+
+      const response = await api.patch<Animal>(`/animals/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      return response.data
+    }
     const response = await api.patch<Animal>(`/animals/${id}`, data)
     return response.data
   },
@@ -63,6 +109,14 @@ export const animalsService = {
     const response = await api.get<AnimalStats>(
       `/animals/shelter/${shelterId}/stats`,
     )
+    return response.data
+  },
+
+  /**
+   * Fazer checkout de animais (marcar como inativos)
+   */
+  async checkout(animalIds: string[], shelterId: string): Promise<{ message: string; count: number; animalIds: string[] }> {
+    const response = await api.post('/animals/checkout', { animalIds, shelterId })
     return response.data
   },
 }

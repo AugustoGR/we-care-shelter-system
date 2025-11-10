@@ -1,31 +1,33 @@
 'use client'
 import React from 'react'
 
-import { useParams } from 'next/navigation'
-
 import { FilterBar } from '@/components/layout/FilterBar'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { TableCard } from '@/components/layout/TableCard'
+import { ModuleDisclaimerModal } from '@/components/modules'
+import { Button } from '@/components/ui/button'
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal'
 import { DataTable, Column } from '@/components/ui/DataTable'
+import { ModuleDisclaimerButton } from '@/components/ui/ModuleDisclaimerButton'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/StatusBadge'
-import { usePermissions, useShelterPermissions } from '@/hooks'
+import { MODULE_INFO } from '@/constants/modules'
 
-import { ModalForm } from './components/ModalForm'
+import { CheckoutModal, ModalForm, PhotoModal } from './components'
 import { type Animal, SPECIES_OPTIONS, COLUMNS } from './constants/animals'
 import { useShelteredAnimals } from './hooks/useShelteredAnimals'
 import styles from './ShelteredAnimals.module.scss'
 
 export default function ShelteredAnimalsPage() {
-  const params = useParams()
-  const shelterId = params.shelter as string
-  const { modules: permissionModules, isAdmin } = useShelterPermissions(shelterId)
-  const { canWriteInModule } = usePermissions()
-
-  // Admin pode editar tudo, caso contrário verifica permissão no módulo
-  const userCanWrite = isAdmin || canWriteInModule('animals', permissionModules)
   const {
+    user,
+    isAdmin,
+    userCanWrite,
+    isDisclaimerOpen,
+    disclaimerModule,
+    openDisclaimer,
+    closeDisclaimer,
+    getModuleData,
     isModalOpen,
     setIsModalOpen,
     isEditMode,
@@ -33,6 +35,8 @@ export default function ShelteredAnimalsPage() {
     setDeleteModalOpen,
     animalToDelete,
     setAnimalToDelete,
+    photoModalOpen,
+    selectedPhoto,
     isDeleting,
     isLoading,
     isSaving,
@@ -43,6 +47,10 @@ export default function ShelteredAnimalsPage() {
     speciesFilter,
     setSpeciesFilter,
     filtered,
+    animals,
+    checkoutModalOpen,
+    setCheckoutModalOpen,
+    isCheckingOut,
     handleInputChange,
     handleEdit,
     handleSubmit,
@@ -50,7 +58,10 @@ export default function ShelteredAnimalsPage() {
     handleDeleteConfirm,
     handleCheckboxChange,
     handleFileChange,
+    handlePhotoClick,
+    closePhotoModal,
     clearFilters,
+    handleCheckout,
   } = useShelteredAnimals()
 
   // Adicionar renderização JSX para as colunas especiais
@@ -58,7 +69,31 @@ export default function ShelteredAnimalsPage() {
     if (col.header === 'Foto') {
       return {
         ...col,
-        accessor: () => <div className={styles.animalPhoto} />,
+        accessor: (row: Animal) => (
+          <div
+            className={styles.animalPhoto}
+            onClick={() => row.photo && handlePhotoClick(row.photo, row.name)}
+            role={row.photo ? 'button' : undefined}
+            tabIndex={row.photo ? 0 : undefined}
+            onKeyDown={(e) => {
+              if (row.photo && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault()
+                handlePhotoClick(row.photo, row.name)
+              }
+            }}
+            aria-label={row.photo ? `Ver foto de ${row.name}` : undefined}
+          >
+            {row.photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={row.photo}
+                alt={row.name}
+              />
+            ) : (
+              <span className={styles.noPhoto}>Sem foto</span>
+            )}
+          </div>
+        ),
       }
     }
     if (col.header === 'Status') {
@@ -83,103 +118,138 @@ export default function ShelteredAnimalsPage() {
   })
 
   return (
-    <PageLayout
-      title="Gerenciamento de Animais"
-      subtitle="Lista completa de animais abrigados e seus status."
-      onAdd={userCanWrite ? () => setIsModalOpen(true) : undefined}
-      addButtonText="Adicionar Animal"
-    >
-      {error && (
-        <div
-          style={{
-            padding: '1rem',
-            marginBottom: '1rem',
-            backgroundColor: '#fee',
-            color: '#c00',
-            borderRadius: '4px',
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      {!userCanWrite && (
-        <div
-          style={{
-            padding: '12px',
-            marginBottom: '16px',
-            backgroundColor: '#FFF8E1',
-            border: '1px solid #FFD54F',
-            borderRadius: '8px',
-            color: '#F57F17',
-          }}
-        >
-          ⚠️ Você não tem permissão para editar animais. Apenas visualização
-          permitida.
-        </div>
-      )}
-
-      <FilterBar
-        searchValue={search}
-        searchPlaceholder="Buscar por nome, espécie ou raça..."
-        onSearchChange={setSearch}
-        filters={
-          <Select
-            value={speciesFilter}
-            onChange={(e) => setSpeciesFilter(e.target.value)}
-            options={SPECIES_OPTIONS}
-            placeholder="Espécie"
+    <>
+      <PageLayout
+        title="Gerenciamento de Animais"
+        subtitle="Lista completa de animais abrigados e seus status."
+        onAdd={userCanWrite ? () => setIsModalOpen(true) : undefined}
+        addButtonText="Adicionar Animal"
+        disclaimerButton={
+          <ModuleDisclaimerButton
+            onClick={() => openDisclaimer(MODULE_INFO.animals)}
           />
         }
-        onClearFilters={clearFilters}
-      />
-
-      <TableCard
-        title="Animais no Abrigo"
-        subtitle="Visualize e gerencie todos os animais cadastrados."
       >
-        {isLoading ? (
-          <div style={{ textAlign: 'center', padding: '2rem' }}>
-            Carregando animais...
+        {error && <div className={styles.errorBanner}>{error}</div>}
+
+        {!userCanWrite && (
+          <div className={styles.noPermissionBanner}>
+            ⚠️ Você não tem permissão para editar animais. Apenas visualização
+            permitida.
           </div>
-        ) : (
-          <DataTable
-            data={filtered}
-            columns={columns}
-            onEdit={userCanWrite ? handleEdit : undefined}
-            onDelete={userCanWrite ? handleDeleteClick : undefined}
-            emptyMessage="Nenhum animal encontrado."
+        )}
+
+        <FilterBar
+          searchValue={search}
+          searchPlaceholder="Buscar por nome, espécie ou raça..."
+          onSearchChange={setSearch}
+          filters={
+            <Select
+              value={speciesFilter}
+              onChange={(e) => setSpeciesFilter(e.target.value)}
+              options={SPECIES_OPTIONS}
+              placeholder="Espécie"
+            />
+          }
+          onClearFilters={clearFilters}
+        />
+
+        {userCanWrite && filtered.length > 0 && (
+          <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="secondary"
+              onClick={() => setCheckoutModalOpen(true)}
+            >
+              Fazer Checkout
+            </Button>
+          </div>
+        )}
+
+        <TableCard
+          title="Animais no Abrigo"
+          subtitle="Visualize e gerencie todos os animais cadastrados."
+        >
+          {isLoading ? (
+            <div className={styles.loadingContainer}>Carregando animais...</div>
+          ) : (
+            <DataTable
+              data={filtered}
+              columns={columns}
+              onEdit={userCanWrite ? handleEdit : undefined}
+              onDelete={userCanWrite ? handleDeleteClick : undefined}
+              emptyMessage="Nenhum animal encontrado."
+            />
+          )}
+        </TableCard>
+
+        <ConfirmationModal
+          isOpen={deleteModalOpen}
+          onClose={() => {
+            setDeleteModalOpen(false)
+            setAnimalToDelete(null)
+          }}
+          onConfirm={handleDeleteConfirm}
+          title="Confirmar Exclusão"
+          message={`Tem certeza que deseja excluir o animal ${animalToDelete?.name}?`}
+          confirmText="Excluir"
+          confirmButtonStyle={{ backgroundColor: '#E45B63' }}
+          isLoading={isDeleting}
+          loadingText="Excluindo..."
+          showUndoWarning={true}
+        />
+
+        <ModalForm
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          form={form}
+          onInputChange={handleInputChange}
+          onCheckboxChange={handleCheckboxChange}
+          onFileChange={handleFileChange}
+          onSubmit={handleSubmit}
+          isSaving={isSaving}
+          isEditMode={isEditMode}
+        />
+
+        {disclaimerModule && (
+          <ModuleDisclaimerModal
+            isOpen={isDisclaimerOpen}
+            onClose={closeDisclaimer}
+            module={disclaimerModule}
+            responsibleName={
+              getModuleData('animals')?.responsibleVolunteer?.user?.name ||
+              'Admin'
+            }
+            adminName={user?.name || 'Administrador'}
+            isUserAdmin={isAdmin}
+            isUserResponsible={
+              getModuleData('animals')?.responsibleVolunteer?.user?.id ===
+              user?.id
+            }
+            isUserAssociated={
+              getModuleData('animals')?.associatedVolunteers?.some(
+                (v) => v.volunteer.user.id === user?.id,
+              ) || false
+            }
           />
         )}
-      </TableCard>
 
-      <ConfirmationModal
-        isOpen={deleteModalOpen}
-        onClose={() => {
-          setDeleteModalOpen(false)
-          setAnimalToDelete(null)
-        }}
-        onConfirm={handleDeleteConfirm}
-        title="Confirmar Exclusão"
-        message={`Tem certeza que deseja excluir o animal ${animalToDelete?.name}?`}
-        confirmText="Excluir"
-        confirmButtonStyle={{ backgroundColor: '#E45B63' }}
-        isLoading={isDeleting}
-        loadingText="Excluindo..."
-        showUndoWarning={true}
-      />
+        {selectedPhoto && (
+          <PhotoModal
+            isOpen={photoModalOpen}
+            onClose={closePhotoModal}
+            photoUrl={selectedPhoto.url}
+            animalName={selectedPhoto.name}
+          />
+        )}
 
-      <ModalForm
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        form={form}
-        onInputChange={handleInputChange}
-        onCheckboxChange={handleCheckboxChange}
-        onFileChange={handleFileChange}
-        onSubmit={handleSubmit}
-        isSaving={isSaving}
-        isEditMode={isEditMode}
-      />
-    </PageLayout>
+        <CheckoutModal
+          isOpen={checkoutModalOpen}
+          onClose={() => setCheckoutModalOpen(false)}
+          animals={animals}
+          onConfirm={handleCheckout}
+          isLoading={isCheckingOut}
+        />
+      </PageLayout>
+    </>
   )
 }

@@ -5,7 +5,7 @@ import type { VolunteerProps } from '@/@types/volunteerProps'
 import { Modal } from '@/components/layout/Modal'
 import { Button } from '@/components/ui/button'
 
-import { useManageModule } from '../hooks/useManageModule'
+import { useManageModule } from '../../hooks/useManageModule'
 import styles from './ModalForm.module.scss'
 
 interface ModalFormProps {
@@ -19,7 +19,7 @@ interface ModalFormProps {
   moduleData?: ShelterModuleProps
   volunteers: VolunteerProps[]
   onSave: (data: {
-    responsibleVolunteerId?: string
+    responsibleVolunteerId?: string | null
     associatedVolunteerIds: string[]
   }) => Promise<void>
 }

@@ -94,6 +94,20 @@
 	color: #171A1F;
 }
 
+.cardDescription {
+	font-family: 'Open Sans', sans-serif;
+	font-size: 13px;
+	line-height: 1.5em;
+	color: #6B7280;
+	margin-bottom: 8px;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .ownerBadge,
 .volunteerBadge {
 	display: inline-flex;
@@ -124,7 +138,23 @@
 	font-size: 14px;
 	line-height: 1.4285714285714286em;
 	color: #565D6D;
+	margin-bottom: 8px;
+}
+
+.cardAddress {
+	display: flex;
+	align-items: flex-start;
+	gap: 6px;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 13px;
+	line-height: 1.5em;
+	color: #6B7280;
 	margin-bottom: 11px;
+
+	svg {
+		color: #9CA3AF;
+		flex-shrink: 0;
+	}
 }
 
 .cardStatusRow {

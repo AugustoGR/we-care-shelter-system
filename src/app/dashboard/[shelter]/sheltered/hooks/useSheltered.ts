@@ -10,7 +10,13 @@ import {
   CreateShelteredPersonData,
   UpdateShelteredPersonData,
 } from '@/@types/shelteredPersonProps'
-import { useErrorHandler } from '@/hooks'
+import { useAuth } from '@/contexts/AuthContext'
+import {
+  useErrorHandler,
+  useModuleDisclaimer,
+  usePermissions,
+  useShelterPermissions,
+} from '@/hooks'
 import { shelteredPeopleService } from '@/services'
 import { getErrorMessage, SUCCESS_MESSAGES } from '@/utils/errorMessages'
 
@@ -19,6 +25,7 @@ import {
   STATUS_OPTIONS,
   GENERO_OPTIONS,
   IDADE_OPTIONS,
+  PAGE_SIZE,
 } from '../constants/sheltered'
 
 type FormData = Omit<CreateShelteredPersonData, 'shelterId'>
@@ -26,12 +33,26 @@ type FormData = Omit<CreateShelteredPersonData, 'shelterId'>
 export const useSheltered = () => {
   const params = useParams()
   const shelterId = params.shelter as string
+  const { user } = useAuth()
   const { handleError, handleSuccess } = useErrorHandler()
+  const { modules: permissionModules, isAdmin } = useShelterPermissions(shelterId)
+  const { canWriteInModule } = usePermissions()
+  const {
+    isDisclaimerOpen,
+    disclaimerModule,
+    openDisclaimer,
+    closeDisclaimer,
+  } = useModuleDisclaimer()
+
+  // Verificar permissões
+  const userCanWrite =
+    isAdmin || canWriteInModule('sheltered_people', permissionModules)
 
   const [sheltered, setSheltered] = useState<ShelteredPerson[]>([])
   const [filteredSheltered, setFilteredSheltered] = useState<ShelteredPerson[]>(
     [],
   )
+  const [currentPage, setCurrentPage] = useState(1)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -49,6 +70,10 @@ export const useSheltered = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Estados para modal de checkout
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false)
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
 
   /**
    * Carregar os abrigados do abrigo
@@ -209,6 +234,46 @@ export const useSheltered = () => {
   }
 
   /**
+   * Limpar todos os filtros
+   */
+  const clearFilters = () => {
+    setFilterStatus('')
+    setFilterGenero('')
+    setFilterIdade('')
+    setSearchValue('')
+  }
+
+  /**
+   * Limpar filtros com reset de página
+   */
+  const handleClearFilters = () => {
+    clearFilters()
+    setCurrentPage(1)
+  }
+
+  /**
+   * Fazer checkout de abrigados (marcar como inativos)
+   */
+  const handleCheckout = async (peopleIds: string[]) => {
+    setIsCheckingOut(true)
+    try {
+      await shelteredPeopleService.checkout(peopleIds, shelterId)
+      handleSuccess('Checkout realizado com sucesso!')
+
+      // Recarregar lista
+      await loadSheltered()
+      setCheckoutModalOpen(false)
+    } catch (err: any) {
+      console.error('Error checking out sheltered people:', err)
+      const errorMsg = getErrorMessage(err)
+      setError(errorMsg)
+      handleError(err)
+    } finally {
+      setIsCheckingOut(false)
+    }
+  }
+
+  /**
    * Submeter formulário (criar ou atualizar)
    */
   const handleSubmit = async () => {
@@ -253,6 +318,27 @@ export const useSheltered = () => {
     formData,
     selectedSheltered,
 
+    // Permissões
+    user,
+    isAdmin,
+    userCanWrite,
+
+    // Disclaimer
+    isDisclaimerOpen,
+    disclaimerModule,
+    openDisclaimer,
+    closeDisclaimer,
+
+    // Paginação
+    currentPage,
+    setCurrentPage,
+    pageSize: PAGE_SIZE,
+    totalPages: Math.ceil(filteredSheltered.length / PAGE_SIZE),
+    paginatedData: filteredSheltered.slice(
+      (currentPage - 1) * PAGE_SIZE,
+      currentPage * PAGE_SIZE,
+    ),
+
     // Estados de UI
     isModalOpen,
     isDeleteModalOpen,
@@ -262,6 +348,11 @@ export const useSheltered = () => {
     isLoading,
     isSaving,
     error,
+
+    // Estados de modal de checkout
+    checkoutModalOpen,
+    setCheckoutModalOpen,
+    isCheckingOut,
 
     // Filtros
     filterStatus,
@@ -290,5 +381,7 @@ export const useSheltered = () => {
     handleInputChange,
     handleSubmit,
     loadSheltered,
+    handleClearFilters,
+    handleCheckout,
   }
 }

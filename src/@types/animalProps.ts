@@ -13,6 +13,7 @@ export interface Animal {
   felina: boolean
   photo?: string | null
   status: string
+  active: boolean
   shelterId: string
   shelter?: {
     id: string

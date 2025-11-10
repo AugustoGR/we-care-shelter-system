@@ -1,18 +1,39 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, ChangeEvent, FormEvent } from 'react'
 
 import { useParams } from 'next/navigation'
 
 import { Animal } from '@/@types/animalProps'
-import { useErrorHandler } from '@/hooks'
+import { useAuth } from '@/contexts/AuthContext'
+import {
+  useErrorHandler,
+  useModuleDisclaimer,
+  usePermissions,
+  useShelterPermissions,
+} from '@/hooks'
 import { animalsService } from '@/services'
 import { getErrorMessage, SUCCESS_MESSAGES } from '@/utils/errorMessages'
 
+import { useModules } from '../../modules/hooks/useModules'
 import { INITIAL_FORM } from '../constants/animals'
 
 export const useShelteredAnimals = () => {
   const params = useParams()
   const shelterId = params.shelter as string
+  const { user } = useAuth()
   const { handleError, handleSuccess } = useErrorHandler()
+  const { modules: permissionModules, isAdmin } =
+    useShelterPermissions(shelterId)
+  const { canWriteInModule } = usePermissions()
+  const {
+    isDisclaimerOpen,
+    disclaimerModule,
+    openDisclaimer,
+    closeDisclaimer,
+  } = useModuleDisclaimer()
+  const { getModuleData } = useModules()
+
+  // Verificar permissões
+  const userCanWrite = isAdmin || canWriteInModule('animals', permissionModules)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -27,6 +48,17 @@ export const useShelteredAnimals = () => {
   const [search, setSearch] = useState('')
   const [speciesFilter, setSpeciesFilter] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  // Estados para modal de foto
+  const [photoModalOpen, setPhotoModalOpen] = useState(false)
+  const [selectedPhoto, setSelectedPhoto] = useState<{
+    url: string
+    name: string
+  } | null>(null)
+
+  // Estados para modal de checkout
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false)
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
 
   // Carregar animais do abrigo
   const loadAnimals = useCallback(async () => {
@@ -61,12 +93,11 @@ export const useShelteredAnimals = () => {
   })
 
   const handleInputChange = (
-    e: React.ChangeEvent<
+    e: ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => {
     const { name, value } = e.target
-    console.log('handleInputChange:', { name, value }) // Debug
     setForm({ ...form, [name]: value })
   }
 
@@ -90,14 +121,12 @@ export const useShelteredAnimals = () => {
     setIsModalOpen(true)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
     try {
       setIsSaving(true)
       setError(null)
-
-      console.log('Form data before submit:', form) // Debug
 
       // Converter age para number se preenchido
       const age = form.age ? parseInt(form.age) : undefined
@@ -118,13 +147,11 @@ export const useShelteredAnimals = () => {
         shelterId,
       }
 
-      console.log('Animal data to send:', animalData) // Debug
-
       if (isEditMode && animalToEdit) {
-        await animalsService.update(animalToEdit.id, animalData)
+        await animalsService.update(animalToEdit.id, animalData, form.photo || undefined)
         handleSuccess(SUCCESS_MESSAGES.UPDATED)
       } else {
-        await animalsService.create(animalData)
+        await animalsService.create(animalData, form.photo || undefined)
         handleSuccess(SUCCESS_MESSAGES.CREATED)
       }
 
@@ -181,12 +208,56 @@ export const useShelteredAnimals = () => {
     setForm((f) => ({ ...f, photo: file }))
   }
 
+  const handlePhotoClick = (photoUrl: string, animalName: string) => {
+    setSelectedPhoto({ url: photoUrl, name: animalName })
+    setPhotoModalOpen(true)
+  }
+
+  const closePhotoModal = () => {
+    setPhotoModalOpen(false)
+    setSelectedPhoto(null)
+  }
+
   const clearFilters = () => {
     setSearch('')
     setSpeciesFilter('')
   }
 
+  const handleCheckout = async (animalIds: string[]) => {
+    setIsCheckingOut(true)
+    try {
+      await animalsService.checkout(animalIds, shelterId)
+      handleSuccess('Checkout realizado com sucesso!')
+
+      // Recarregar lista
+      await loadAnimals()
+      setCheckoutModalOpen(false)
+    } catch (err: any) {
+      console.error('Error checking out animals:', err)
+      const errorMsg = getErrorMessage(err)
+      setError(errorMsg)
+      handleError(err)
+    } finally {
+      setIsCheckingOut(false)
+    }
+  }
+
   return {
+    // Permissões
+    user,
+    isAdmin,
+    userCanWrite,
+
+    // Disclaimer
+    isDisclaimerOpen,
+    disclaimerModule,
+    openDisclaimer,
+    closeDisclaimer,
+
+    // Module data
+    getModuleData,
+
+    // Estados de UI
     isModalOpen,
     setIsModalOpen,
     isEditMode,
@@ -195,10 +266,23 @@ export const useShelteredAnimals = () => {
     setDeleteModalOpen,
     animalToDelete,
     setAnimalToDelete,
+
+    // Estados de modal de foto
+    photoModalOpen,
+    selectedPhoto,
+
+    // Estados de modal de checkout
+    checkoutModalOpen,
+    setCheckoutModalOpen,
+    isCheckingOut,
+
+    // Estados de carregamento
     isDeleting,
     isLoading,
     isSaving,
     error,
+
+    // Dados
     form,
     setForm,
     search,
@@ -207,6 +291,8 @@ export const useShelteredAnimals = () => {
     setSpeciesFilter,
     filtered,
     animals,
+
+    // Funções
     handleInputChange,
     handleEdit,
     handleSubmit,
@@ -214,7 +300,10 @@ export const useShelteredAnimals = () => {
     handleDeleteConfirm,
     handleCheckboxChange,
     handleFileChange,
+    handlePhotoClick,
+    closePhotoModal,
     clearFilters,
     loadAnimals,
+    handleCheckout,
   }
 }

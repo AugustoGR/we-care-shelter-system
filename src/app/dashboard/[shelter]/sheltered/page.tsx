@@ -1,35 +1,43 @@
 'use client'
 
-import React, { useState } from 'react'
-
-import { useParams } from 'next/navigation'
+import React from 'react'
 
 import { FilterBar } from '@/components/layout/FilterBar'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { TableCard } from '@/components/layout/TableCard'
+import { ModuleDisclaimerModal } from '@/components/modules'
+import { Button } from '@/components/ui/button'
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal'
 import { DataTable, Column } from '@/components/ui/DataTable'
+import { ModuleDisclaimerButton } from '@/components/ui/ModuleDisclaimerButton'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/StatusBadge'
-import { usePermissions, useShelterPermissions } from '@/hooks'
+import { MODULE_INFO } from '@/constants/modules'
 
-import { ModalForm } from './components/ModalForm'
-import {
-  type ShelteredPerson,
-  PAGE_SIZE,
-  COLUMNS,
-} from './constants/sheltered'
+import { useModules } from '../modules/hooks/useModules'
+import { CheckoutModal, ModalForm } from './components'
+import { type ShelteredPerson, COLUMNS } from './constants/sheltered'
 import { useSheltered } from './hooks/useSheltered'
+import styles from './Sheltered.module.scss'
 
 export default function Sheltered() {
-  const params = useParams()
-  const shelterId = params.shelter as string
-  const { modules: permissionModules, isAdmin } = useShelterPermissions(shelterId)
-  const { canWriteInModule } = usePermissions()
+  const { getModuleData } = useModules()
   const {
-    sheltered,
+    paginatedData,
     formData,
     selectedSheltered,
+    user,
+    isAdmin,
+    userCanWrite,
+    isDisclaimerOpen,
+    disclaimerModule,
+    openDisclaimer,
+    closeDisclaimer,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    totalPages,
+    sheltered,
     isModalOpen,
     isDeleteModalOpen,
     isEditMode,
@@ -55,18 +63,12 @@ export default function Sheltered() {
     handleDeleteConfirm,
     handleInputChange,
     handleSubmit,
+    handleClearFilters,
+    checkoutModalOpen,
+    setCheckoutModalOpen,
+    isCheckingOut,
+    handleCheckout,
   } = useSheltered()
-
-  const [currentPage, setCurrentPage] = useState(1)
-
-  // Admin pode editar tudo, caso contrário verifica permissão no módulo
-  const userCanWrite = isAdmin || canWriteInModule('people', permissionModules)
-
-  // Paginação
-  const startIndex = (currentPage - 1) * PAGE_SIZE
-  const endIndex = startIndex + PAGE_SIZE
-  const paginatedData = sheltered.slice(startIndex, endIndex)
-  const totalPages = Math.ceil(sheltered.length / PAGE_SIZE)
 
   // Adicionar renderização JSX para a coluna de status
   const columns: Column<ShelteredPerson>[] = COLUMNS.map((col) => {
@@ -79,141 +81,156 @@ export default function Sheltered() {
     return col
   })
 
-  // Limpar filtros
-  const clearFilters = () => {
-    setSearchValue('')
-    setFilterStatus('')
-    setFilterGenero('')
-    setFilterIdade('')
-    setCurrentPage(1)
-  }
-
   return (
-    <PageLayout
-      title="Gestão de Abrigados"
-      subtitle="Visualize e gerencie todos os indivíduos abrigados."
-      onAdd={userCanWrite ? handleAdd : undefined}
-      addButtonText="Adicionar Novo Abrigado"
-    >
-      {error && (
-        <div
-          style={{
-            padding: '12px',
-            marginBottom: '16px',
-            backgroundColor: '#FEE',
-            border: '1px solid #FCC',
-            borderRadius: '8px',
-            color: '#C00',
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      {!userCanWrite && (
-        <div
-          style={{
-            padding: '12px',
-            marginBottom: '16px',
-            backgroundColor: '#FFF8E1',
-            border: '1px solid #FFD54F',
-            borderRadius: '8px',
-            color: '#F57F17',
-          }}
-        >
-          ⚠️ Você não tem permissão para editar abrigados. Apenas
-          visualização permitida.
-        </div>
-      )}
-
-      <FilterBar
-        searchValue={searchValue}
-        searchPlaceholder="Buscar abrigado..."
-        onSearchChange={(value) => {
-          setSearchValue(value)
-          setCurrentPage(1) // Reset para primeira página ao buscar
-        }}
-        filters={
-          <>
-            <Select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              options={statusOptions}
-              placeholder="Status"
-            />
-            <Select
-              value={filterGenero}
-              onChange={(e) => setFilterGenero(e.target.value)}
-              options={generoOptions}
-              placeholder="Gênero"
-            />
-            <Select
-              value={filterIdade}
-              onChange={(e) => setFilterIdade(e.target.value)}
-              options={idadeOptions}
-              placeholder="Idade"
-            />
-          </>
+    <>
+      <PageLayout
+        title="Gestão de Abrigados"
+        subtitle="Visualize e gerencie todos os indivíduos abrigados."
+        onAdd={userCanWrite ? handleAdd : undefined}
+        addButtonText="Adicionar Novo Abrigado"
+        disclaimerButton={
+          <ModuleDisclaimerButton
+            onClick={() => openDisclaimer(MODULE_INFO.people)}
+          />
         }
-        onClearFilters={clearFilters}
-      />
-
-      <TableCard
-        title="Lista de Abrigados"
-        subtitle="Gerencie os detalhes de cada indivíduo abrigado."
       >
-        {isLoading ? (
-          <div style={{ padding: '40px', textAlign: 'center' }}>
-            Carregando...
+        {error && <div className={styles.errorBanner}>{error}</div>}
+
+        {!userCanWrite && (
+          <div className={styles.noPermissionBanner}>
+            ⚠️ Você não tem permissão para editar abrigados. Apenas
+            visualização permitida.
           </div>
-        ) : (
-          <DataTable
-            data={paginatedData}
-            columns={columns}
-            onEdit={userCanWrite ? handleEdit : undefined}
-            onDelete={userCanWrite ? handleDelete : undefined}
-            emptyMessage="Nenhum abrigado encontrado."
-            pagination={{
-              currentPage,
-              totalPages,
-              onPageChange: setCurrentPage,
-              pageSize: PAGE_SIZE,
-              totalItems: sheltered.length,
-            }}
+        )}
+
+        <FilterBar
+          searchValue={searchValue}
+          searchPlaceholder="Buscar abrigado..."
+          onSearchChange={(value) => {
+            setSearchValue(value)
+            setCurrentPage(1) // Reset para primeira página ao buscar
+          }}
+          filters={
+            <>
+              <Select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                options={statusOptions}
+                placeholder="Status"
+              />
+              <Select
+                value={filterGenero}
+                onChange={(e) => setFilterGenero(e.target.value)}
+                options={generoOptions}
+                placeholder="Gênero"
+              />
+              <Select
+                value={filterIdade}
+                onChange={(e) => setFilterIdade(e.target.value)}
+                options={idadeOptions}
+                placeholder="Idade"
+              />
+            </>
+          }
+          onClearFilters={handleClearFilters}
+        />
+
+        {userCanWrite && paginatedData.length > 0 && (
+          <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="secondary"
+              onClick={() => setCheckoutModalOpen(true)}
+            >
+              Fazer Checkout
+            </Button>
+          </div>
+        )}
+
+        <TableCard
+          title="Lista de Abrigados"
+          subtitle="Gerencie os detalhes de cada indivíduo abrigado."
+        >
+          {isLoading ? (
+            <div className={styles.loadingContainer}>Carregando...</div>
+          ) : (
+            <DataTable
+              data={paginatedData}
+              columns={columns}
+              onEdit={userCanWrite ? handleEdit : undefined}
+              onDelete={userCanWrite ? handleDelete : undefined}
+              emptyMessage="Nenhum abrigado encontrado."
+              pagination={{
+                currentPage,
+                totalPages,
+                onPageChange: setCurrentPage,
+                pageSize,
+                totalItems: sheltered.length,
+              }}
+            />
+          )}
+        </TableCard>
+
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          title="Confirmar Exclusão"
+          message={`Tem certeza que deseja excluir o abrigado ${selectedSheltered?.nome}?`}
+          confirmText="Excluir"
+          confirmButtonStyle={{ backgroundColor: '#E45B63' }}
+          isLoading={isSaving}
+          loadingText="Excluindo..."
+          showUndoWarning={true}
+        />
+
+        <ModalForm
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          form={{
+            nome: formData.nome || '',
+            cpf: formData.cpf || '',
+            dataNascimento: formData.dataNascimento || '',
+            genero: formData.genero || '',
+            status: formData.status || 'Ativo',
+          }}
+          onInputChange={(field, value) =>
+            handleInputChange(field as keyof typeof formData, value)
+          }
+          onSubmit={handleSubmit}
+          isEditMode={isEditMode}
+          isSaving={isSaving}
+        />
+
+        {disclaimerModule && (
+          <ModuleDisclaimerModal
+            isOpen={isDisclaimerOpen}
+            onClose={closeDisclaimer}
+            module={disclaimerModule}
+            responsibleName={
+              getModuleData('people')?.responsibleVolunteer?.user?.name ||
+            'Admin'
+            }
+            adminName={user?.name || 'Administrador'}
+            isUserAdmin={isAdmin}
+            isUserResponsible={
+              getModuleData('people')?.responsibleVolunteer?.user?.id === user?.id
+            }
+            isUserAssociated={
+              getModuleData('people')?.associatedVolunteers?.some(
+                (v) => v.volunteer.user.id === user?.id,
+              ) || false
+            }
           />
         )}
-      </TableCard>
 
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        title="Confirmar Exclusão"
-        message={`Tem certeza que deseja excluir o abrigado ${selectedSheltered?.nome}?`}
-        confirmText="Excluir"
-        confirmButtonStyle={{ backgroundColor: '#E45B63' }}
-        isLoading={isSaving}
-        loadingText="Excluindo..."
-        showUndoWarning={true}
-      />
-
-      <ModalForm
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        form={{
-          nome: formData.nome || '',
-          cpf: formData.cpf || '',
-          dataNascimento: formData.dataNascimento || '',
-          genero: formData.genero || '',
-          status: formData.status || 'Ativo',
-        }}
-        onInputChange={(field, value) =>
-          handleInputChange(field as keyof typeof formData, value)
-        }
-        onSubmit={handleSubmit}
-        isEditMode={isEditMode}
-        isSaving={isSaving}
-      />
-    </PageLayout>
+        <CheckoutModal
+          isOpen={checkoutModalOpen}
+          onClose={() => setCheckoutModalOpen(false)}
+          people={sheltered}
+          onConfirm={handleCheckout}
+          isLoading={isCheckingOut}
+        />
+      </PageLayout>
+    </>
   )
 }

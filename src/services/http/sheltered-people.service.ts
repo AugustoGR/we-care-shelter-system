@@ -87,4 +87,12 @@ export const shelteredPeopleService = {
     )
     return response.data
   },
+
+  /**
+   * Fazer checkout de abrigados (marcar como inativos)
+   */
+  async checkout(peopleIds: string[], shelterId: string): Promise<{ message: string; count: number; peopleIds: string[] }> {
+    const response = await api.post('/sheltered-people/checkout', { peopleIds, shelterId })
+    return response.data
+  },
 }

@@ -11,7 +11,7 @@ import { FormField, FormRow, FormRoot } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 
-import { CATEGORIAS, UNIDADES, STATUS_OPTIONS } from '../constants/resources'
+import { CATEGORIAS, UNIDADES, STATUS_OPTIONS } from '../../constants/resources'
 
 interface ModalFormProps {
   isOpen: boolean

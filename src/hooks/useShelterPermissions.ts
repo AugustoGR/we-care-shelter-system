@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 
 import type { ShelterModuleProps } from '@/@types'
+import { useAuth } from '@/contexts/AuthContext'
 import { shelterModulesService } from '@/services/http/shelterModulesService'
 import { sheltersService } from '@/services/http/shelters.service'
 
@@ -19,6 +20,7 @@ interface ShelterPermissions {
 }
 
 export function useShelterPermissions(shelterId: string): ShelterPermissions {
+  const { user } = useAuth()
   const [role, setRole] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -52,25 +54,27 @@ export function useShelterPermissions(shelterId: string): ShelterPermissions {
   }, [shelterId])
 
   const fetchModules = useCallback(async () => {
-    if (!shelterId) return
+    if (!shelterId || !user) return
 
     try {
       const modulesData = await shelterModulesService.getAll(shelterId)
       setModules(modulesData)
 
-      // Filtrar módulos onde o usuário é responsável ou associado
-      // Isso será preenchido pelo backend baseado no userId
-      // Por enquanto, usamos a estrutura já retornada
+      // Filtrar módulos onde o usuário ATUAL é responsável ou associado
       setUserModules({
-        responsible: modulesData.filter((m) => m.responsibleVolunteer),
-        associated: modulesData.filter(
-          (m) => m.associatedVolunteers && m.associatedVolunteers.length > 0,
+        responsible: modulesData.filter(
+          (m) => m.responsibleVolunteer?.user?.id === user.id
+        ),
+        associated: modulesData.filter((m) =>
+          m.associatedVolunteers?.some(
+            (av) => av.volunteer.user.id === user.id
+          )
         ),
       })
     } catch (error) {
       console.error('Erro ao buscar módulos:', error)
     }
-  }, [shelterId])
+  }, [shelterId, user])
 
   useEffect(() => {
     fetchUserRole()

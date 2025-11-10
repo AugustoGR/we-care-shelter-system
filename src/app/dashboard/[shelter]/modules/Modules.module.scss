@@ -88,6 +88,15 @@
   display: block;
 }
 
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 30px;
+  min-height: 28px;
+}
+
 .cardTitle {
   font-family: 'Open Sans', sans-serif;
   font-size: 20px;
@@ -96,8 +105,7 @@
   letter-spacing: -0.025em;
   color: #171a1f;
   text-align: center;
-  margin-bottom: 30px;
-  min-height: 28px;
+  margin: 0;
 }
 
 .cardDesc {

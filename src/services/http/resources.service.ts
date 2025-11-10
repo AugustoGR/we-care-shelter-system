@@ -53,4 +53,17 @@ export const resourcesService = {
   async remove(id: string): Promise<void> {
     await api.delete(`/resources/${id}`)
   },
+
+  /**
+   * Dar baixa em um recurso (reduzir quantidade do estoque)
+   */
+  async withdraw(resourceId: string, quantidade: number, shelterId: string): Promise<{
+    message: string
+    quantidadeRetirada: number
+    quantidadeRestante: number
+    resource: ResourceProps
+  }> {
+    const response = await api.post('/resources/withdraw', { resourceId, quantidade, shelterId })
+    return response.data
+  },
 }

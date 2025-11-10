@@ -11,6 +11,7 @@ interface PageLayoutProps {
   subtitle?: string
   onAdd?: () => void
   addButtonText?: string
+  disclaimerButton?: React.ReactNode
   children: React.ReactNode
 }
 
@@ -19,13 +20,17 @@ export function PageLayout({
   subtitle,
   onAdd,
   addButtonText = 'Adicionar Novo',
+  disclaimerButton,
   children,
 }: PageLayoutProps) {
   return (
     <div className={styles.container}>
       <div className={styles.pageHeader}>
-        <div>
-          <h1 className={styles.pageTitle}>{title}</h1>
+        <div className={styles.headerContent}>
+          <div className={styles.titleWrapper}>
+            <h1 className={styles.pageTitle}>{title}</h1>
+            {disclaimerButton}
+          </div>
           {subtitle && <p className={styles.pageSubtitle}>{subtitle}</p>}
         </div>
         {onAdd && (

@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { useShelterModules } from '@/hooks/useShelterModules'
+import { useShelterPermissions } from '@/hooks/useShelterPermissions'
 
 import styles from './Nav.module.scss'
 
@@ -24,6 +25,10 @@ export function Nav({ isOpen, onClose }: NavProps) {
     shelterMatch && shelterMatch[1] !== 'new-shelter' ? shelterMatch[1] : null
 
   const { isModuleActive } = useShelterModules(shelterId)
+  const { isAdmin, userModules } = useShelterPermissions(shelterId || '')
+
+  // Verificar se o usuário é responsável por algum módulo
+  const isResponsibleForAnyModule = userModules.responsible.length > 0
 
   // Don't show nav on login/logon pages
   if (pathname === '/login' || pathname === '/logon' || pathname === '/') {
@@ -70,20 +75,16 @@ export function Nav({ isOpen, onClose }: NavProps) {
       icon: '/img/nav/toggle-left-icon.svg',
       href: shelterId ? `/dashboard/${shelterId}/modules` : '#',
       disabled: !shelterId,
-      alwaysShow: true, // Sempre mostrar a opção de módulos
-    },
-    {
-      name: 'Relatórios',
-      icon: '/img/nav/file-text-icon.svg',
-      href: shelterId ? `/dashboard/${shelterId}/reports` : '#',
-      disabled: true,
-      moduleKey: 'reports',
+      showForResponsible: true, // Mostrar para responsáveis de módulos
+      adminOnly: true, // E também para admin
     },
     {
       name: 'Gerenciamento',
       icon: '/img/nav/settings-icon.svg',
-      href: '/dashboard/management',
-      disabled: true,
+      href: shelterId ? `/dashboard/${shelterId}/settings` : '#',
+      disabled: !shelterId,
+      alwaysShow: true, // Sempre mostrar para admins
+      adminOnly: true, // Apenas para admin
     },
   ]
 
@@ -100,7 +101,17 @@ export function Nav({ isOpen, onClose }: NavProps) {
   // Filtrar itens baseado na ativação do módulo
   const filteredNavItems = navItems.filter((item) => {
     // Sempre mostrar itens sem moduleKey ou com alwaysShow
-    if (!item.moduleKey || item.alwaysShow) return true
+    if (!item.moduleKey || item.alwaysShow) {
+      // Se for um item apenas para admin, verificar permissão
+      if (item.adminOnly && !isAdmin) {
+        // Se também pode mostrar para responsáveis, verificar isso
+        if (item.showForResponsible && isResponsibleForAnyModule) {
+          return true
+        }
+        return false
+      }
+      return true
+    }
 
     // Verificar se o módulo está ativo
     return isModuleActive(item.moduleKey)

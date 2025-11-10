@@ -4,8 +4,8 @@ import type { ShelterModuleProps } from '@/@types'
 
 export const useManageModule = (moduleData?: ShelterModuleProps) => {
   const [responsibleVolunteerId, setResponsibleVolunteerId] = useState<
-    string | undefined
-  >(undefined)
+    string | null
+  >(null)
   const [selectedVolunteerIds, setSelectedVolunteerIds] = useState<string[]>(
     [],
   )
@@ -13,12 +13,12 @@ export const useManageModule = (moduleData?: ShelterModuleProps) => {
 
   useEffect(() => {
     if (moduleData) {
-      setResponsibleVolunteerId(moduleData.responsibleVolunteerId || undefined)
+      setResponsibleVolunteerId(moduleData.responsibleVolunteerId || null)
       setSelectedVolunteerIds(
         moduleData.associatedVolunteers?.map((av) => av.volunteer.id) || [],
       )
     } else {
-      setResponsibleVolunteerId(undefined)
+      setResponsibleVolunteerId(null)
       setSelectedVolunteerIds([])
     }
   }, [moduleData])
@@ -33,19 +33,20 @@ export const useManageModule = (moduleData?: ShelterModuleProps) => {
   }
 
   const handleResponsibleChange = (value: string) => {
-    setResponsibleVolunteerId(value || undefined)
+    // Quando selecionar "Nenhum", definir como null ao invés de undefined
+    setResponsibleVolunteerId(value || null)
   }
 
   const handleSave = async (
     onSave: (data: {
-      responsibleVolunteerId?: string
+      responsibleVolunteerId?: string | null
       associatedVolunteerIds: string[]
     }) => Promise<void>,
   ) => {
     try {
       setLoading(true)
       await onSave({
-        responsibleVolunteerId,
+        responsibleVolunteerId: responsibleVolunteerId || null,
         associatedVolunteerIds: selectedVolunteerIds,
       })
       return true

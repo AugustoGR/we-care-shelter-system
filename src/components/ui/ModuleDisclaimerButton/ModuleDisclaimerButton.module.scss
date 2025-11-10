@@ -1,0 +1,25 @@
+.disclaimerBtn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #565d6d;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+
+  &:hover {
+    color: #0078bd;
+    background: #f3f4f6;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    display: block;
+  }
+}

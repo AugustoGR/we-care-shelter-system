@@ -3,7 +3,13 @@ import { useState, useEffect, useCallback, ChangeEvent, FormEvent } from 'react'
 import { useParams } from 'next/navigation'
 
 import { VolunteerProps } from '@/@types/volunteerProps'
-import { useErrorHandler } from '@/hooks'
+import { useAuth } from '@/contexts/AuthContext'
+import {
+  useErrorHandler,
+  useModuleDisclaimer,
+  usePermissions,
+  useShelterPermissions,
+} from '@/hooks'
 import { volunteersService } from '@/services'
 import { SUCCESS_MESSAGES } from '@/utils/errorMessages'
 
@@ -12,7 +18,21 @@ import { INITIAL_FORM } from '../constants/volunteers'
 export const useVolunteers = () => {
   const params = useParams()
   const shelterId = params?.shelter as string
+  const { user } = useAuth()
   const { handleError, handleSuccess } = useErrorHandler()
+  const { modules: permissionModules, isAdmin } =
+    useShelterPermissions(shelterId)
+  const { canWriteInModule } = usePermissions()
+  const {
+    isDisclaimerOpen,
+    disclaimerModule,
+    openDisclaimer,
+    closeDisclaimer,
+  } = useModuleDisclaimer()
+
+  // Verificar permissões
+  const userCanWrite =
+    isAdmin || canWriteInModule('volunteers', permissionModules)
 
   const [volunteers, setVolunteers] = useState<VolunteerProps[]>([])
   const [loading, setLoading] = useState(true)
@@ -155,10 +175,26 @@ export const useVolunteers = () => {
   }
 
   return {
+    // Permissões
+    user,
+    isAdmin,
+    userCanWrite,
+
+    // Disclaimer
+    isDisclaimerOpen,
+    disclaimerModule,
+    openDisclaimer,
+    closeDisclaimer,
+
+    // Dados
     search,
     setSearch,
     statusFilter,
     setStatusFilter,
+    form,
+    filtered,
+
+    // Estados de UI
     modalOpen,
     setModalOpen,
     deleteModalOpen,
@@ -167,11 +203,13 @@ export const useVolunteers = () => {
     volunteerToEdit,
     volunteerToDelete,
     setVolunteerToDelete,
+
+    // Estados de carregamento
     isDeleting,
     isSubmitting,
-    form,
-    filtered,
     loading,
+
+    // Funções
     handleInputChange,
     handleUserSelect,
     handleEdit,

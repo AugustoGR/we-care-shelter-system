@@ -1,12 +1,18 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, ChangeEvent, FormEvent } from 'react'
 
 import moment from 'moment'
 import { useParams } from 'next/navigation'
 
 import { ResourceProps } from '@/@types'
-import { useErrorHandler } from '@/hooks'
+import { useAuth } from '@/contexts/AuthContext'
+import {
+  useErrorHandler,
+  useModuleDisclaimer,
+  usePermissions,
+  useShelterPermissions,
+} from '@/hooks'
 import { resourcesService } from '@/services'
 import { SUCCESS_MESSAGES } from '@/utils/errorMessages'
 
@@ -15,7 +21,19 @@ import { INITIAL_FORM } from '../constants/resources'
 export const useResources = () => {
   const params = useParams()
   const shelterId = params?.shelter as string
+  const { user } = useAuth()
   const { handleError, handleSuccess } = useErrorHandler()
+  const { modules: permissionModules, isAdmin } = useShelterPermissions(shelterId)
+  const { canWriteInModule } = usePermissions()
+  const {
+    isDisclaimerOpen,
+    disclaimerModule,
+    openDisclaimer,
+    closeDisclaimer,
+  } = useModuleDisclaimer()
+
+  // Verificar permissões
+  const userCanWrite = isAdmin || canWriteInModule('resources', permissionModules)
 
   const [resources, setResources] = useState<ResourceProps[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -31,6 +49,10 @@ export const useResources = () => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [form, setForm] = useState(INITIAL_FORM)
+
+  // Estados para modal de baixa
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false)
+  const [isWithdrawing, setIsWithdrawing] = useState(false)
 
   // Carregar recursos ao montar o componente
   const loadResources = useCallback(async () => {
@@ -61,7 +83,7 @@ export const useResources = () => {
   })
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
@@ -82,7 +104,7 @@ export const useResources = () => {
     setModalOpen(true)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
     if (isSubmitting) return
@@ -144,7 +166,30 @@ export const useResources = () => {
     }
   }
 
+  const clearFilters = () => {
+    setSearch('')
+    setCategoriaFiltro('')
+  }
+
+  const handleWithdraw = async (resourceId: string, quantidade: number) => {
+    setIsWithdrawing(true)
+    try {
+      await resourcesService.withdraw(resourceId, quantidade, shelterId)
+      handleSuccess('Baixa realizada com sucesso!')
+
+      // Recarregar lista
+      await loadResources()
+      setWithdrawModalOpen(false)
+    } catch (error: any) {
+      console.error('Error withdrawing resource:', error)
+      handleError(error)
+    } finally {
+      setIsWithdrawing(false)
+    }
+  }
+
   return {
+    // Estados
     resources,
     isLoading,
     search,
@@ -164,10 +209,30 @@ export const useResources = () => {
     form,
     setForm,
     filteredResources,
+
+    // Estados de modal de baixa
+    withdrawModalOpen,
+    setWithdrawModalOpen,
+    isWithdrawing,
+
+    // Permissões
+    userCanWrite,
+    isAdmin,
+    user,
+
+    // Disclaimer
+    isDisclaimerOpen,
+    disclaimerModule,
+    openDisclaimer,
+    closeDisclaimer,
+
+    // Handlers
     handleInputChange,
     handleSubmit,
     handleEdit,
     handleDeleteClick,
     handleDeleteConfirm,
+    clearFilters,
+    handleWithdraw,
   }
 }

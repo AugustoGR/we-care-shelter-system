@@ -1,5 +1,3 @@
-// Volunteers - Estilos específicos
-
 .skillsCell {
   display: flex;
   flex-wrap: wrap;
@@ -14,4 +12,13 @@
   padding: 2px 12px;
   font-size: 0.9rem;
   font-weight: 500;
+}
+
+.noPermissionBanner {
+  padding: 12px;
+  margin-bottom: 16px;
+  background-color: #fff8e1;
+  border: 1px solid #ffd54f;
+  border-radius: 8px;
+  color: #f57f17;
 }

@@ -1,1 +1,39 @@
-// Sheltered - Estilos específicos
+.errorBanner {
+  padding: 12px;
+  margin-bottom: 16px;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  color: #c00;
+  font-size: 14px;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    padding: 10px;
+  }
+}
+
+.noPermissionBanner {
+  padding: 12px;
+  margin-bottom: 16px;
+  background-color: #fff8e1;
+  border: 1px solid #ffd54f;
+  border-radius: 8px;
+  color: #f57f17;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    padding: 10px;
+  }
+}
+
+.loadingContainer {
+  padding: 40px;
+  text-align: center;
+  font-size: 16px;
+  color: #666;
+}

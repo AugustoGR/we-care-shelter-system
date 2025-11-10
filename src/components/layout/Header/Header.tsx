@@ -7,6 +7,7 @@ import Link from 'next/link'
 
 import { useAuth } from '@/contexts/AuthContext'
 
+import { UserProfileModal } from './components'
 import styles from './Header.module.scss'
 
 interface HeaderProps {
@@ -16,6 +17,8 @@ interface HeaderProps {
 export function Header({ onMenuToggle }: HeaderProps) {
   const { logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
+  const [profileModalOpen, setProfileModalOpen] = React.useState(false)
+  const [profileModalMode, setProfileModalMode] = React.useState<'view' | 'edit'>('view')
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -24,6 +27,16 @@ export function Header({ onMenuToggle }: HeaderProps) {
   const handleLogout = () => {
     logout()
     setIsMenuOpen(false)
+  }
+
+  const handleOpenProfile = (mode: 'view' | 'edit') => {
+    setProfileModalMode(mode)
+    setProfileModalOpen(true)
+    setIsMenuOpen(false)
+  }
+
+  const handleCloseProfile = () => {
+    setProfileModalOpen(false)
   }
 
   return (
@@ -105,7 +118,11 @@ export function Header({ onMenuToggle }: HeaderProps) {
 
             {isMenuOpen && (
               <div className={styles.dropdown}>
-                <Link href="/dashboard/profile" className={styles.dropdownItem}>
+                <button
+                  onClick={() => handleOpenProfile('view')}
+                  className={styles.dropdownItem}
+                  style={{ width: '100%', textAlign: 'left' }}
+                >
                   <Image
                     src="/img/user-icon.svg"
                     alt="Profile"
@@ -113,10 +130,11 @@ export function Header({ onMenuToggle }: HeaderProps) {
                     height={18}
                   />
                   <span>Meu Perfil</span>
-                </Link>
-                <Link
-                  href="/dashboard/settings"
+                </button>
+                <button
+                  onClick={() => handleOpenProfile('edit')}
                   className={styles.dropdownItem}
+                  style={{ width: '100%', textAlign: 'left' }}
                 >
                   <svg
                     width="18"
@@ -130,7 +148,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
                     <path d="M12 1v6m0 6v6m-7.07-3.07l4.24 4.24m4.24-4.24l4.24 4.24M1 12h6m6 0h6m-3.07-7.07l4.24 4.24M7.76 7.76l4.24 4.24" />
                   </svg>
                   <span>Configurações</span>
-                </Link>
+                </button>
                 <hr className={styles.divider} />
                 <button
                   onClick={handleLogout}
@@ -153,6 +171,12 @@ export function Header({ onMenuToggle }: HeaderProps) {
                 </button>
               </div>
             )}
+
+            <UserProfileModal
+              isOpen={profileModalOpen}
+              onClose={handleCloseProfile}
+              mode={profileModalMode}
+            />
           </div>
         </nav>
       </div>
