@@ -1,11 +1,6 @@
 import React from 'react'
 
-import {
-  ModalRoot,
-  ModalHeader,
-  ModalContent,
-  ModalActions,
-} from '@/components/layout/Modal'
+import { Modal } from '@/components/layout/Modal'
 import { Button } from '@/components/ui/button'
 import { FormField, FormRow, FormRoot } from '@/components/ui/Form'
 import { Input } from '@/components/ui/input'
@@ -52,14 +47,14 @@ export function ModalForm({
   }
 
   return (
-    <ModalRoot onClose={onClose}>
-      <ModalHeader
+    <Modal.Root onClose={onClose}>
+      <Modal.Header
         title={
           isEditMode ? 'Editar Abrigado' : 'Cadastrar Novo Abrigado'
         }
         onClose={onClose}
       />
-      <ModalContent>
+      <Modal.Content>
         <FormRoot onSubmit={handleSubmit}>
           <FormRow columns={1}>
             <FormField label="Nome Completo" htmlFor="nome" required>
@@ -132,7 +127,7 @@ export function ModalForm({
             </FormField>
           </FormRow>
 
-          <ModalActions>
+          <Modal.Actions>
             <Button
               type="button"
               variant="secondary"
@@ -148,9 +143,9 @@ export function ModalForm({
                   ? 'Salvar Alterações'
                   : 'Cadastrar Abrigado'}
             </Button>
-          </ModalActions>
+          </Modal.Actions>
         </FormRoot>
-      </ModalContent>
-    </ModalRoot>
+      </Modal.Content>
+    </Modal.Root>
   )
 }

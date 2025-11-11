@@ -5,9 +5,11 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { InvitationResponse, VolunteerInvitationProps } from '@/@types'
 import { useAuth } from '@/contexts/AuthContext'
+import { volunteerInvitationsService } from '@/services'
 
-import { UserProfileModal } from './components'
+import { UserProfileModal, NotificationModal } from './components'
 import styles from './Header.module.scss'
 
 interface HeaderProps {
@@ -19,6 +21,51 @@ export function Header({ onMenuToggle }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
   const [profileModalOpen, setProfileModalOpen] = React.useState(false)
   const [profileModalMode, setProfileModalMode] = React.useState<'view' | 'edit'>('view')
+  const [notificationModalOpen, setNotificationModalOpen] = React.useState(false)
+  const [invitations, setInvitations] = React.useState<VolunteerInvitationProps[]>([])
+  const [isResponding, setIsResponding] = React.useState(false)
+
+  // Carregar convites pendentes
+  const loadInvitations = React.useCallback(async () => {
+    try {
+      const data = await volunteerInvitationsService.getMyInvitations()
+      setInvitations(data)
+    } catch (error) {
+      console.error('Error loading invitations:', error)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    loadInvitations()
+    // Recarregar convites a cada 30 segundos
+    const interval = setInterval(loadInvitations, 30000)
+    return () => clearInterval(interval)
+  }, [loadInvitations])
+
+  const handleNotificationClick = () => {
+    setNotificationModalOpen(true)
+  }
+
+  const handleRespondInvitation = async (
+    invitationId: string,
+    response: InvitationResponse
+  ) => {
+    setIsResponding(true)
+    try {
+      await volunteerInvitationsService.respond(invitationId, { response })
+      await loadInvitations()
+      setNotificationModalOpen(false)
+
+      // Se o convite foi aceito, recarregar a página para atualizar a lista de abrigos
+      if (response === InvitationResponse.ACCEPTED) {
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error('Error responding to invitation:', error)
+    } finally {
+      setIsResponding(false)
+    }
+  }
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -57,7 +104,10 @@ export function Header({ onMenuToggle }: HeaderProps) {
 
         <nav className={styles.nav}>
           <div className={styles.userSection}>
-            <button className={styles.notificationBtn}>
+            <button
+              className={styles.notificationBtn}
+              onClick={handleNotificationClick}
+            >
               <svg
                 width="24"
                 height="24"
@@ -80,7 +130,9 @@ export function Header({ onMenuToggle }: HeaderProps) {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className={styles.badge}>3</span>
+              {invitations.length > 0 && (
+                <span className={styles.badge}>{invitations.length}</span>
+              )}
             </button>
 
             <button className={styles.userBtn} onClick={toggleMenu}>
@@ -176,6 +228,14 @@ export function Header({ onMenuToggle }: HeaderProps) {
               isOpen={profileModalOpen}
               onClose={handleCloseProfile}
               mode={profileModalMode}
+            />
+
+            <NotificationModal
+              isOpen={notificationModalOpen}
+              onClose={() => setNotificationModalOpen(false)}
+              invitations={invitations}
+              onRespond={handleRespondInvitation}
+              isResponding={isResponding}
             />
           </div>
         </nav>

@@ -1,11 +1,6 @@
 import React from 'react'
 
-import {
-  ModalRoot,
-  ModalHeader,
-  ModalContent,
-  ModalActions,
-} from '@/components/layout/Modal'
+import {  Modal } from '@/components/layout/Modal'
 import { Button } from '@/components/ui/button'
 import { CheckboxGroup } from '@/components/ui/CheckboxGroup'
 import { FileUpload } from '@/components/ui/FileUpload'
@@ -60,12 +55,12 @@ export function ModalForm({
   if (!isOpen) return null
 
   return (
-    <ModalRoot onClose={onClose}>
-      <ModalHeader
+    <Modal.Root onClose={onClose}>
+      <Modal.Header
         title={isEditMode ? 'Editar Animal' : 'Registrar Novo Animal'}
         onClose={onClose}
       />
-      <ModalContent>
+      <Modal.Content>
         <FormRoot onSubmit={onSubmit}>
           <p className={styles.formDesc}>
             {isEditMode
@@ -199,7 +194,7 @@ export function ModalForm({
             value={form.photo}
             onChange={onFileChange}
           />
-          <ModalActions>
+          <Modal.Actions>
             <Button
               type="button"
               variant="secondary"
@@ -216,9 +211,9 @@ export function ModalForm({
                   : 'Salvar Animal'
               }
             </Button>
-          </ModalActions>
+          </Modal.Actions>
         </FormRoot>
-      </ModalContent>
-    </ModalRoot>
+      </Modal.Content>
+    </Modal.Root>
   )
 }

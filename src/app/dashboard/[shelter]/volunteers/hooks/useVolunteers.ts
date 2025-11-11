@@ -10,7 +10,7 @@ import {
   usePermissions,
   useShelterPermissions,
 } from '@/hooks'
-import { volunteersService } from '@/services'
+import { volunteersService, volunteerInvitationsService } from '@/services'
 import { SUCCESS_MESSAGES } from '@/utils/errorMessages'
 
 import { INITIAL_FORM } from '../constants/volunteers'
@@ -122,15 +122,14 @@ export const useVolunteers = () => {
         })
         handleSuccess(SUCCESS_MESSAGES.UPDATED)
       } else {
-        // Criar novo voluntário
-        await volunteersService.create({
+        // Criar convite de voluntário ao invés de criar diretamente
+        await volunteerInvitationsService.create({
           userId: form.userId,
           phone: form.phone,
           skills,
-          status: form.status,
           shelterId,
         })
-        handleSuccess(SUCCESS_MESSAGES.CREATED)
+        handleSuccess('Convite enviado com sucesso! O usuário receberá uma notificação.')
       }
 
       setModalOpen(false)

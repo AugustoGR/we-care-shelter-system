@@ -1,2 +1,1 @@
-export { UserProfileModal } from './UserProfileModal'
 export { NotificationModal } from './NotificationModal'

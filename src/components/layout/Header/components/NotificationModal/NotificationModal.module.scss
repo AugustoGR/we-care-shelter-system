@@ -1,0 +1,115 @@
+@use '@/styles/variables.scss' as *;
+
+.emptyState {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #666;
+}
+
+.invitationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.invitationCard {
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  h4 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $blue_dark;
+  }
+}
+
+.badge {
+  padding: 0.25rem 0.75rem;
+  background-color: $blue_light;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.cardLocation {
+  margin: 0.5rem 0;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.viewButton {
+  margin-top: 0.5rem;
+  padding: 0;
+  background: none;
+  border: none;
+  color: $blue_light;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.invitationDetails {
+  padding: 1rem 0;
+
+  h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $blue_dark;
+  }
+}
+
+.shelterInfo {
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+
+  h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $blue_dark;
+  }
+}
+
+.location {
+  margin: 0 0 1rem 0;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.description {
+  margin: 0;
+  color: #444;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.message {
+  padding: 1rem;
+  background-color: #eff6ff;
+  border-left: 4px solid $blue_light;
+  border-radius: 4px;
+
+  p {
+    margin: 0;
+    color: #333;
+    line-height: 1.6;
+  }
+}

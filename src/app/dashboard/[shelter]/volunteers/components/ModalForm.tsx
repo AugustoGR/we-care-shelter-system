@@ -1,11 +1,6 @@
 import React from 'react'
 
-import {
-  ModalRoot,
-  ModalHeader,
-  ModalContent,
-  ModalActions,
-} from '@/components/layout/Modal'
+import { Modal } from '@/components/layout/Modal'
 import {
   Autocomplete,
   AutocompleteOption,
@@ -79,12 +74,12 @@ export function ModalForm({
   if (!isOpen) return null
 
   return (
-    <ModalRoot onClose={onClose}>
-      <ModalHeader
+    <Modal.Root onClose={onClose}>
+      <Modal.Header
         title={isEditMode ? 'Editar Voluntário' : 'Cadastrar Novo Voluntário'}
         onClose={onClose}
       />
-      <ModalContent>
+      <Modal.Content>
         <FormRoot onSubmit={onSubmit}>
           <FormRow columns={1}>
             <FormField
@@ -140,17 +135,16 @@ export function ModalForm({
               />
             </FormField>
           </FormRow>
-
-          <ModalActions>
+          <Modal.Actions>
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancelar
             </Button>
             <Button type="submit" variant="primary" disabled={!form.userId || isSubmitting}>
               {isEditMode ? 'Salvar Alterações' : 'Cadastrar Voluntário'}
             </Button>
-          </ModalActions>
+          </Modal.Actions>
         </FormRoot>
-      </ModalContent>
-    </ModalRoot>
+      </Modal.Content>
+    </Modal.Root>
   )
 }
