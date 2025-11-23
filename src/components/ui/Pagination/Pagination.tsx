@@ -5,7 +5,6 @@ import styles from './Pagination.module.scss'
 export interface PaginationConfig {
   currentPage: number
   totalPages: number
-  // eslint-disable-next-line no-unused-vars
   onPageChange: (page: number) => void
   pageSize?: number
   totalItems?: number

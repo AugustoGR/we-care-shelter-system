@@ -10,7 +10,6 @@ import styles from './FilterBar.module.scss'
 interface FilterBarProps {
   searchValue: string
   searchPlaceholder?: string
-  // eslint-disable-next-line no-unused-vars
   onSearchChange: (value: string) => void
   filters?: React.ReactNode
   onClearFilters?: () => void
